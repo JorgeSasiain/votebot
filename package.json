@@ -1,0 +1,9 @@
+{
+  "name": "votebot",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-xmpp-client":"node-xmpp/client"
+  }
+}
