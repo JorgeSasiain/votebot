@@ -4,6 +4,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "node-xmpp-client":"node-xmpp/client"
+    "node-xmpp-client":"^3.2.0"
   }
 }
