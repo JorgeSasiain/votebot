@@ -1,4 +1,5 @@
 import { ACCOUNTS } from './credentials.js';
+import StanzaHandlers from './stanzaHandlers.js';
 
 const Client = require('node-xmpp-client');
 
@@ -32,9 +33,9 @@ client.on('online', function(data) {
 /* When bot receives a message */
 client.on('stanza', function(stanza) {
 
-	let recv = stanza.getChildText('body');
+	let body = stanza.getChildText('body');
 
-  if (recv) {
+  if (body) {
 
     let stanza = new Client.Stanza(
       'message', {
@@ -43,33 +44,47 @@ client.on('stanza', function(stanza) {
       }
     )
     .c('body')
-    .t('RECEIVED MESSAGE:\n' + recv);
+    .t('RECEIVED MESSAGE:\n' + body);
 
     client.send(stanza);
 
     try {
-      recv = JSON.parse(recv);
+
+      /* JSON */
+      body = JSON.parse(body);
+      if (body.hasOwnProperty('type')) handleStanza(client, body);
+
     } catch (ex) {
+
+      /* Not JSON */
       return;
+
     }
 
-    if (recv.hasOwnProperty('contacts') && recv.hasOwnProperty('pollTitle')
-      && recv.hasOwnProperty('creator')) {
-      for (let contact of recv.contacts) {
-
-        stanza = new Client.Stanza(
-          'message', {
-            to: contact,
-            type: 'chat'
-          }
-        )
-        .c('body')
-        .t('Nueva encuesta disponible de ' + recv.creator + ': ' + recv.pollTitle);
-
-        client.send(stanza);
-        console.log('Encuesta ' + recv.pollTitle + ' enviada a ' + contact);
-      }
-    }
   }
 
 })
+
+function handleStanza(client, body) {
+
+  switch (body.type) {
+
+    case 'newPoll':
+      if (assertProps(body, ['contacts', 'pollTitle', 'creator']))
+        StanzaHandlers.onNewPoll(client, body);
+      break;
+
+    case 'newVote':
+      if (assertProps(body, ['mucs', 'pollTitle', 'creator']))
+        StanzaHandlers.onNewVote(client, body);
+      break;
+  }
+
+}
+
+function assertProps(obj, props) {
+  for (let prop of props) {
+    if (!obj.hasOwnProperty(prop)) return false;
+  }
+  return true;
+}
