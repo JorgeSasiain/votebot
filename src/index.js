@@ -15,7 +15,7 @@ client.on('online', function(data) {
   let onOnlineMessage =
     'Bot connected via votebot app: ' + jid.local + '@' + jid.domain + '/' + jid.resource;
 
-  var stanza = new Client.Stanza(
+  let stanza = new Client.Stanza(
     'message', {
       to: ACCOUNTS.OWNER,
       type: 'chat'
@@ -24,6 +24,7 @@ client.on('online', function(data) {
   .c('body')
   .t(onOnlineMessage);
 
+  client.send('<presence/>');
   client.send(stanza);
 
 })
@@ -35,8 +36,6 @@ client.on('stanza', function(stanza) {
 
   if (recv) {
 
-    console.log('Mensaje recibido: ' + recv);
-
     let stanza = new Client.Stanza(
       'message', {
         to: ACCOUNTS.OWNER,
@@ -47,6 +46,30 @@ client.on('stanza', function(stanza) {
     .t('RECEIVED MESSAGE:\n' + recv);
 
     client.send(stanza);
+
+    try {
+      recv = JSON.parse(recv);
+    } catch (ex) {
+      return;
+    }
+
+    if (recv.hasOwnProperty('contacts') && recv.hasOwnProperty('pollTitle')
+      && recv.hasOwnProperty('creator')) {
+      for (let contact of recv.contacts) {
+
+        stanza = new Client.Stanza(
+          'message', {
+            to: contact,
+            type: 'chat'
+          }
+        )
+        .c('body')
+        .t('Nueva encuesta disponible de ' + recv.creator + ': ' + recv.pollTitle);
+
+        client.send(stanza);
+        console.log('Encuesta ' + recv.pollTitle + ' enviada a ' + contact);
+      }
+    }
   }
 
 })
