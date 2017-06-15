@@ -1,5 +1,6 @@
 import { ACCOUNTS } from './credentials.js';
 import StanzaHandlers from './stanzaHandlers.js';
+import CommandHandlers from './commandHandlers.js';
 
 const Client = require('node-xmpp-client');
 
@@ -28,15 +29,17 @@ client.on('online', function(data) {
   client.send('<presence/>');
   client.send(stanza);
 
-})
+});
 
 /* When bot receives a message */
 client.on('stanza', function(stanza) {
 
+  let user = stanza.attrs.from;
 	let body = stanza.getChildText('body');
 
   if (body) {
 
+    /* Send echo to owner account */
     let stanza = new Client.Stanza(
       'message', {
         to: ACCOUNTS.OWNER,
@@ -48,11 +51,18 @@ client.on('stanza', function(stanza) {
 
     client.send(stanza);
 
+    /* Handle commands */
+    if (body.startsWith("/") || body.startsWith("*")) {
+      handleCommand(client, body.substr(1), user);
+      return;
+    }
+
+    /* Handle external stanzas */
     try {
 
       /* JSON */
       body = JSON.parse(body);
-      if (body.hasOwnProperty('type')) handleStanza(client, body);
+      if (body.hasOwnProperty('type')) handleStanza(client, body, user);
 
     } catch (ex) {
 
@@ -63,9 +73,45 @@ client.on('stanza', function(stanza) {
 
   }
 
-})
+});
 
-function handleStanza(client, body) {
+function handleCommand(client, body, user) {
+
+  /* Voting commands */
+  if (new RegExp(/^[1-4]{1,4}$/).test(body)) {
+    CommandHandlers.onVoteCommand(client, body);
+    return;
+  }
+
+  /* Other commands */
+  switch (body) {
+
+    case 'l':
+    case 'list':
+    case 'listado':
+      CommandHandlers.onListCommand(client, body);
+      break;
+
+    case 's':
+    case 'select':
+    case 'seleccionar':
+      CommandHandlers.onSelectCommand(client, body);
+      break;
+
+    case 'd':
+    case 'discard':
+    case 'descartar':
+      CommandHandlers.onDiscardCommand(client, body);
+      break;
+
+    default:
+      CommandHandlers.onCommandError(client, body, user);
+      break;
+  }
+
+}
+
+function handleStanza(client, body, user) {
 
   switch (body.type) {
 

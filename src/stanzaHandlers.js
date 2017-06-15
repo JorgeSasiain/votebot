@@ -20,7 +20,7 @@ const StanzaHandlers = {
     }
   },
 
-  onNewVote: function(data) {
+  onNewVote: function(client, data) {
 
   }
 
