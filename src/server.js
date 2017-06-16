@@ -1,6 +1,12 @@
-import { ACCOUNTS } from './credentials.js';
-import StanzaHandlers from './stanzaHandlers.js';
-import CommandHandlers from './commandHandlers.js';
+import StanzaHandlers from './stanzaHandlers';
+import CommandHandlers from './commandHandlers';
+
+var ACCOUNTS = '';
+try {
+  ACCOUNTS = require('./credentials').ACCOUNTS;
+} catch (ex) {
+  ACCOUNTS = process.env.ACCOUNTS;
+}
 
 const Client = require('node-xmpp-client');
 
@@ -9,6 +15,10 @@ const client = new Client({
   password: ACCOUNTS.BOT_PASS,
   preferredSaslMechanism: 'DIGEST-MD5'
 });
+
+const monitorTTLs = function() {
+  console.log("Monitoring TTL of documents in the 'polls' collection...");
+}
 
 /* When server starts and bot connects */
 client.on('online', function(data) {
@@ -28,6 +38,8 @@ client.on('online', function(data) {
 
   client.send('<presence/>');
   client.send(stanza);
+
+  setInterval(monitorTTLs, 60000);
 
 });
 

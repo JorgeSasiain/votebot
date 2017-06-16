@@ -3,7 +3,7 @@
   "main": "server/server.js",
   "repository": "https://github.com/JorgeSasiain/votebot",
   "scripts": {
-    "start": "node_modules/.bin/babel-node --presets es2015 src/index.js"
+    "start": "node_modules/.bin/babel-node --presets es2015 src/server.js"
   },
   "dependencies": {
     "babel-cli": "^6.11.4",
