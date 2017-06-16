@@ -34,7 +34,7 @@ function handleCommand(client, body, user) {
 
   /* Voting commands */
   if (new RegExp(/^[1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(client, body);
+    CommandHandlers.onVoteCommand(client, body, user);
     return;
   }
 
@@ -44,19 +44,26 @@ function handleCommand(client, body, user) {
     case 'l':
     case 'list':
     case 'listado':
-      CommandHandlers.onListCommand(client, body);
+      CommandHandlers.onListCommand(client, body, user);
       break;
 
     case 's':
     case 'select':
     case 'seleccionar':
-      CommandHandlers.onSelectCommand(client, body);
+      CommandHandlers.onSelectCommand(client, body, user);
       break;
 
     case 'd':
     case 'discard':
     case 'descartar':
-      CommandHandlers.onDiscardCommand(client, body);
+      CommandHandlers.onDiscardCommand(client, body, user);
+      break;
+
+    case 'b':
+    case 'a':
+    case 'back':
+    case 'atras':
+      CommandHandlers.onChangeCommand(client, body, user);
       break;
 
     default:
