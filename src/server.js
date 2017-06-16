@@ -1,3 +1,5 @@
+import { Server } from 'http';
+import Express from 'express';
 import StanzaHandlers from './stanzaHandlers';
 import CommandHandlers from './commandHandlers';
 
@@ -10,6 +12,10 @@ try {
   ACCOUNTS.OWNER = process.env.OWNER;
 }
 
+const app = new Express();
+const server = new Server(app);
+const PORT = process.env.PORT || 3000;
+
 const Client = require('node-xmpp-client');
 
 const client = new Client({
@@ -18,9 +24,79 @@ const client = new Client({
   preferredSaslMechanism: 'DIGEST-MD5'
 });
 
+/* Function to run every minute */
 const monitorTTLs = function() {
   console.log("Monitoring TTL of documents in the 'polls' collection...");
 }
+
+/* Function to handle user commands */
+function handleCommand(client, body, user) {
+
+  /* Voting commands */
+  if (new RegExp(/^[1-4]{1,4}$/).test(body)) {
+    CommandHandlers.onVoteCommand(client, body);
+    return;
+  }
+
+  /* Other commands */
+  switch (body) {
+
+    case 'l':
+    case 'list':
+    case 'listado':
+      CommandHandlers.onListCommand(client, body);
+      break;
+
+    case 's':
+    case 'select':
+    case 'seleccionar':
+      CommandHandlers.onSelectCommand(client, body);
+      break;
+
+    case 'd':
+    case 'discard':
+    case 'descartar':
+      CommandHandlers.onDiscardCommand(client, body);
+      break;
+
+    default:
+      CommandHandlers.onCommandError(client, body, user);
+      break;
+  }
+
+}
+
+/* Function to handle other events */
+function handleStanza(client, body, user) {
+
+  switch (body.type) {
+
+    case 'newPoll':
+      if (assertProps(body, ['contacts', 'pollTitle', 'creator']))
+        StanzaHandlers.onNewPoll(client, body);
+      break;
+
+    case 'newVote':
+      if (assertProps(body, ['mucs', 'pollTitle', 'creator']))
+        StanzaHandlers.onNewVote(client, body);
+      break;
+  }
+
+}
+
+function assertProps(obj, props) {
+  for (let prop of props) {
+    if (!obj.hasOwnProperty(prop)) return false;
+  }
+  return true;
+}
+
+/* Start server */
+server.listen(PORT, err => {
+  if (err) return console.error(err);
+  console.info("Server running on port " + PORT);
+  setInterval(monitorTTLs, 60000);
+});
 
 /* When server starts and bot connects */
 client.on('online', function(data) {
@@ -40,8 +116,6 @@ client.on('online', function(data) {
 
   client.send('<presence/>');
   client.send(stanza);
-
-  setInterval(monitorTTLs, 60000);
 
 });
 
@@ -88,63 +162,3 @@ client.on('stanza', function(stanza) {
   }
 
 });
-
-function handleCommand(client, body, user) {
-
-  /* Voting commands */
-  if (new RegExp(/^[1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(client, body);
-    return;
-  }
-
-  /* Other commands */
-  switch (body) {
-
-    case 'l':
-    case 'list':
-    case 'listado':
-      CommandHandlers.onListCommand(client, body);
-      break;
-
-    case 's':
-    case 'select':
-    case 'seleccionar':
-      CommandHandlers.onSelectCommand(client, body);
-      break;
-
-    case 'd':
-    case 'discard':
-    case 'descartar':
-      CommandHandlers.onDiscardCommand(client, body);
-      break;
-
-    default:
-      CommandHandlers.onCommandError(client, body, user);
-      break;
-  }
-
-}
-
-function handleStanza(client, body, user) {
-
-  switch (body.type) {
-
-    case 'newPoll':
-      if (assertProps(body, ['contacts', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewPoll(client, body);
-      break;
-
-    case 'newVote':
-      if (assertProps(body, ['mucs', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewVote(client, body);
-      break;
-  }
-
-}
-
-function assertProps(obj, props) {
-  for (let prop of props) {
-    if (!obj.hasOwnProperty(prop)) return false;
-  }
-  return true;
-}
