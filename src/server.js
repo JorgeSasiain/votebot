@@ -1,5 +1,6 @@
 import { Server } from 'http';
 import Express from 'express';
+import Mongo from './mongo';
 import StanzaHandlers from './stanzaHandlers';
 import CommandHandlers from './commandHandlers';
 
@@ -15,6 +16,7 @@ try {
 const app = new Express();
 const server = new Server(app);
 const PORT = process.env.PORT || 3000;
+const TIMER = 60000;
 
 const Client = require('node-xmpp-client');
 
@@ -25,8 +27,14 @@ const client = new Client({
 });
 
 /* Function to run every minute */
-const monitorTTLs = function() {
+function monitorTTLs() {
   console.log("Monitoring TTL of documents in the 'polls' collection...");
+  Mongo.getAboutToExpirePollsID(sendMessage);
+}
+
+/* Send notification to one or more users or to a groupchat */
+function sendMessage(dests, type, body) {
+
 }
 
 /* Function to handle user commands */
@@ -102,7 +110,7 @@ function assertProps(obj, props) {
 server.listen(PORT, err => {
   if (err) return console.error(err);
   console.info("Server running on port " + PORT);
-  setInterval(monitorTTLs, 60000);
+  setInterval(monitorTTLs, TIMER);
 });
 
 /* When server starts and bot connects */
