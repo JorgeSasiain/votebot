@@ -1,11 +1,13 @@
 import StanzaHandlers from './stanzaHandlers';
 import CommandHandlers from './commandHandlers';
 
-var ACCOUNTS = '';
+var ACCOUNTS = {};
 try {
   ACCOUNTS = require('./credentials').ACCOUNTS;
 } catch (ex) {
-  ACCOUNTS = process.env.ACCOUNTS;
+  ACCOUNTS.BOT_JID = process.env.BOT_JID;
+  ACCOUNTS.BOT_PASS = process.env.BOT_PASS;
+  ACCOUNTS.OWNER = process.env.OWNER;
 }
 
 const Client = require('node-xmpp-client');
