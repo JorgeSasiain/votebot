@@ -3,6 +3,7 @@ import Express from 'express';
 import Mongo from './mongo';
 import StanzaHandlers from './stanzaHandlers';
 import CommandHandlers from './commandHandlers';
+import Utils from './utils';
 
 var ACCOUNTS = {};
 try {
@@ -29,11 +30,12 @@ const bot = new Client({
 /* Function to run every minute */
 function monitorTTLs() {
   console.log("Monitoring TTL of documents in the 'polls' collection...");
-  Mongo.getAboutToExpirePollsID(sendMessage);
+  Mongo.getAboutToExpirePollsID(onPollExpire);
 }
 
-/* Send notification to one or more users or to a groupchat */
-function sendMessage(dests, type, body) {
+/* Handle notifications to users or to groupchat and other operations when a poll expires*/
+function onPollExpire(dests, type, body, poll_id) {
+  console.log("A poll is about to expire! - " + poll_id);
   /* TODO */
 }
 
@@ -129,17 +131,8 @@ bot.on('online', function(data) {
   let onOnlineMessage =
     'Bot connected via votebot app: ' + jid.local + '@' + jid.domain + '/' + jid.resource;
 
-  let stanza = new Client.Stanza(
-    'message', {
-      to: ACCOUNTS.OWNER,
-      type: 'chat'
-    }
-  )
-  .c('body')
-  .t(onOnlineMessage);
-
   bot.send('<presence/>');
-  bot.send(stanza);
+  Utils.sendStanza(bot, ACCOUNTS.OWNER, 'chat', onOnlineMessage);
 
 });
 
@@ -152,16 +145,7 @@ bot.on('stanza', function(stanza) {
   if (body) {
 
     /* Send echo to owner account */
-    let stanza = new Client.Stanza(
-      'message', {
-        to: ACCOUNTS.OWNER,
-        type: 'chat'
-      }
-    )
-    .c('body')
-    .t('RECEIVED MESSAGE:\n' + body);
-
-    bot.send(stanza);
+    Utils.sendStanza(bot, ACCOUNTS.OWNER, 'chat', 'RECEIVED MESSAGE:\n' + body);
 
     /* Handle commands */
     if (body.startsWith("/") || body.startsWith("*")) {

@@ -54,7 +54,7 @@ const Mongo = {
       }).toArray(function(err, result) {
 
         result.forEach(function(element){
-          console.log(element._id);
+          callback(null, null, null, element._id);
           /* TODO: search in collection 'users' for documents with this poll id */
         });
 
@@ -66,7 +66,7 @@ const Mongo = {
       }).toArray(function(err, result) {
 
         result.forEach(function(element){
-          console.log(element._id);
+          callback(null, null, null, element._id);
           /* TODO: search in collection 'mucs' for documents with this poll id */
         });
 
