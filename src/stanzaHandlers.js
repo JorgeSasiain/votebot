@@ -2,7 +2,7 @@ const Client = require('node-xmpp-client');
 
 const StanzaHandlers = {
 
-  onNewPoll: function(client, data) {
+  onNewPoll: function(bot, data) {
 
     for (let contact of data.contacts) {
 
@@ -15,12 +15,12 @@ const StanzaHandlers = {
       .c('body')
       .t('Nueva encuesta disponible de ' + data.creator + ': ' + data.pollTitle);
 
-      client.send(stanza);
+      bot.send(stanza);
       console.log('Encuesta ' + data.pollTitle + ' enviada a ' + contact);
     }
   },
 
-  onNewVote: function(client, data) {
+  onNewVote: function(bot, data) {
 
   }
 

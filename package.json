@@ -5,6 +5,9 @@
   "scripts": {
     "start": "node_modules/.bin/babel-node --presets es2015 src/server.js"
   },
+  "engines": {
+    "node": ">= 7.6.0"
+  },
   "dependencies": {
     "babel-cli": "^6.11.4",
     "babel-core": "^6.13.2",

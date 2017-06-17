@@ -15,12 +15,12 @@ try {
 
 const app = new Express();
 const server = new Server(app);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const TIMER = 60000;
 
 const Client = require('node-xmpp-client');
 
-const client = new Client({
+const bot = new Client({
   jid: ACCOUNTS.BOT_JID,
   password: ACCOUNTS.BOT_PASS,
   preferredSaslMechanism: 'DIGEST-MD5'
@@ -34,66 +34,75 @@ function monitorTTLs() {
 
 /* Send notification to one or more users or to a groupchat */
 function sendMessage(dests, type, body) {
-
+  /* TODO */
 }
 
 /* Function to handle user commands */
-function handleCommand(client, body, user) {
+function handleCommand(bot, body, user) {
 
-  /* Voting commands */
-  if (new RegExp(/^[1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(client, body, user);
+  /* Vote command */
+  if (new RegExp(/^v [1-4]{1,4}$|^vote [1-4]{1,4}$|^votar [1-4]{1,4}$/).test(body)) {
+    CommandHandlers.onVoteCommand(bot, body, user);
+    return;
+  }
+
+  /* Select command */
+  if (new RegExp(/^s [A-Za-z0-9]{5}$|^select [A-Za-z0-9]{5}$|^seleccionar [A-Za-z0-9]{5}$/)
+    .test(body)) {
+    CommandHandlers.onSelectCommand(bot, body, user);
     return;
   }
 
   /* Other commands */
   switch (body) {
 
+    case 'h':
+    case 'c':
+    case 'help':
+    case 'commands':
+    case 'comandos':
+      CommandHandlers.onHelpCommand(bot, body, user);
+      break;
+
     case 'l':
     case 'list':
     case 'listado':
-      CommandHandlers.onListCommand(client, body, user);
-      break;
-
-    case 's':
-    case 'select':
-    case 'seleccionar':
-      CommandHandlers.onSelectCommand(client, body, user);
+      CommandHandlers.onListCommand(bot, body, user);
       break;
 
     case 'd':
     case 'discard':
     case 'descartar':
-      CommandHandlers.onDiscardCommand(client, body, user);
+      CommandHandlers.onDiscardCommand(bot, body, user);
       break;
 
     case 'b':
     case 'a':
     case 'back':
     case 'atras':
-      CommandHandlers.onChangeCommand(client, body, user);
+      CommandHandlers.onBackCommand(bot, body, user);
       break;
 
     default:
-      CommandHandlers.onCommandError(client, body, user);
+      CommandHandlers.onCommandError(bot, body, user);
       break;
   }
 
 }
 
 /* Function to handle other events */
-function handleStanza(client, body, user) {
+function handleStanza(bot, body, user) {
 
   switch (body.type) {
 
     case 'newPoll':
       if (assertProps(body, ['contacts', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewPoll(client, body);
+        StanzaHandlers.onNewPoll(bot, body);
       break;
 
     case 'newVote':
       if (assertProps(body, ['mucs', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewVote(client, body);
+        StanzaHandlers.onNewVote(bot, body);
       break;
   }
 
@@ -114,7 +123,7 @@ server.listen(PORT, err => {
 });
 
 /* When server starts and bot connects */
-client.on('online', function(data) {
+bot.on('online', function(data) {
 
   let jid = data.jid;
   let onOnlineMessage =
@@ -129,13 +138,13 @@ client.on('online', function(data) {
   .c('body')
   .t(onOnlineMessage);
 
-  client.send('<presence/>');
-  client.send(stanza);
+  bot.send('<presence/>');
+  bot.send(stanza);
 
 });
 
 /* When bot receives a message */
-client.on('stanza', function(stanza) {
+bot.on('stanza', function(stanza) {
 
   let user = stanza.attrs.from;
 	let body = stanza.getChildText('body');
@@ -152,11 +161,11 @@ client.on('stanza', function(stanza) {
     .c('body')
     .t('RECEIVED MESSAGE:\n' + body);
 
-    client.send(stanza);
+    bot.send(stanza);
 
     /* Handle commands */
     if (body.startsWith("/") || body.startsWith("*")) {
-      handleCommand(client, body.substr(1), user);
+      handleCommand(bot, body.substr(1), user);
       return;
     }
 
@@ -165,7 +174,7 @@ client.on('stanza', function(stanza) {
 
       /* JSON */
       body = JSON.parse(body);
-      if (body.hasOwnProperty('type')) handleStanza(client, body, user);
+      if (body.hasOwnProperty('type')) handleStanza(bot, body, user);
 
     } catch (ex) {
 

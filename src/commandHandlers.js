@@ -1,40 +1,47 @@
 const Client = require('node-xmpp-client');
+import Utils from './utils';
 
 const CommandHandlers = {
 
-  onVoteCommand: function(client, data, user) {
+  onHelpCommand: function(bot, data, user) {
+
+    let body = '\n*COMANDOS GENERALES*\n' +
+               '/c, /comandos: mostrar comandos disponibles\n' +
+               '/l, /listado: listar encuestas disponibles\n' +
+               '/s <código>, /seleccionar <código>: seleccionar encuesta\n' +
+               '\n*COMANDOS DE VOTACIÓN*\n' +
+               '/v <opciones>, /votar <opciones>: votar en una pregunta\n' +
+               '/d, /descartar: dejar de votar en encuesta\n' +
+               '/a, /atras: cambiar voto en pregunta anterior\n'
+               ;
+
+    Utils.sendStanza(bot, user, 'chat', body);
+
+  },
+
+  onVoteCommand: function(bot, data, user) {
     console.log(">Vote command: " + data);
   },
 
-  onListCommand: function(client, data, user) {
+  onListCommand: function(bot, data, user) {
     console.log(">List command: " + data);
   },
 
-  onSelectCommand: function(client, data, user) {
+  onSelectCommand: function(bot, data, user) {
     console.log(">Select command: " + data);
   },
 
-  onDiscardCommand: function(client, data, user) {
+  onDiscardCommand: function(bot, data, user) {
     console.log(">Discard command: " + data);
   },
 
-  onChangeCommand: function(client, data, user) {
-    console.log(">Change command: " + data);
+  onBackCommand: function(bot, data, user) {
+    console.log(">Back command: " + data);
   },
 
-  onCommandError: function(client, data, user) {
-
-    let stanza = new Client.Stanza(
-      'message', {
-        to: user,
-        type: 'chat'
-      }
-    )
-    .c('body')
-    .t('Comando erróneo o desconocido: ' + data);
-
-    client.send(stanza);
-
+  onCommandError: function(bot, data, user) {
+    let body = 'Comando erróneo o desconocido: ' + data;
+    Utils.sendStanza(bot, user, 'chat', body);
   }
 
 };
