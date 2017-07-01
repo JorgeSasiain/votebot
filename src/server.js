@@ -34,9 +34,23 @@ function monitorTTLs() {
 }
 
 /* Handle notifications to users or to groupchat and other operations when a poll expires*/
-function onPollExpire(dests, type, body, poll_id) {
-  console.log("A poll is about to expire! - " + poll_id);
-  /* TODO */
+async function onPollExpire(pollType, _id, title) {
+
+  console.log("A poll is about to expire! - " + _id);
+
+  if (pollType === "poll") {
+
+    let owner = "";
+    let msg = 'Los resultados finales de tu encuesta "' + title +
+    '" están disponibles en la página web!';
+    owner = await Mongo.onPollExpire.notifyOwner(_id);
+    Utils.sendStanza(bot, owner, 'chat', msg);
+    Mongo.onPollExpire.deleteFromUsersAvailablePolls(_id);
+
+  } else if (pollType === "vote") {
+
+  }
+
 }
 
 /* Function to handle user commands */

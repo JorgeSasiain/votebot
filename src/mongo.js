@@ -53,9 +53,8 @@ const Mongo = {
         expireAt: { $lt: triggerDatePoll }
       }).toArray(function(err, result) {
 
-        result.forEach(function(element){
-          callback(null, null, null, element._id);
-          /* TODO: search in collection 'users' for documents with this poll id */
+        result.forEach(function(document) {
+          callback("poll", document._id, document.title);
         });
 
       });
@@ -65,8 +64,8 @@ const Mongo = {
         expireAt: { $lt: triggerDateVote }
       }).toArray(function(err, result) {
 
-        result.forEach(function(element){
-          callback(null, null, null, element._id);
+        result.forEach(function(document) {
+          callback("vote", document._id, document.title);
           /* TODO: search in collection 'mucs' for documents with this poll id */
         });
 
@@ -79,6 +78,38 @@ const Mongo = {
     let triggerDateVote = new Date(triggerTime + 2 * 60000); /* +2m */
 
     Mongo.connect(_getAboutToExpirePollsID, [triggerDatePoll, triggerDateVote], callback);
+
+  },
+
+  onPollExpire: {
+
+    notifyOwner: function(_id) {
+
+      Mongo.db.collection('users').find(
+        { availablePolls: { $elemMatch: { poll_id: _id } } },
+        { availablePolls: { $elemMatch: { poll_id: _id } } }
+      ).toArray(function(err, result) {
+
+        result.forEach(function(document) {
+          if (document.hasOwnProperty('availablePolls')) {
+            if (document.availablePolls[0].owner === true) {
+              return document.availablePolls[0].user;
+            }
+          }
+        });
+
+      });
+
+    },
+
+    deleteFromUsersAvailablePolls: function(_id) {
+
+      Mongo.db.collection('users').updateMany(
+        { },
+        { $pull: { availablePolls: { poll_id: _id } } }
+      );
+
+    }
 
   }
 
