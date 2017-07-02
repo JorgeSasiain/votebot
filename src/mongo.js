@@ -97,7 +97,7 @@ const Mongo = {
 
         result.forEach(function(document) {
           if (document.hasOwnProperty('availablePolls')) {
-            if (document.availablePolls[0].owner === true) {
+            if (document.availablePolls[0].owner) {
               callback(document.user);
             }
           }
@@ -141,6 +141,7 @@ const Mongo = {
 
   },
 
+  /* Apply callback to each poll available to the specified user */
   getUserAvailablePolls: function(user, callback) {
 
     let polls = [];
@@ -156,17 +157,47 @@ const Mongo = {
 
       for (let poll of document.availablePolls) {
 
+        /* Don't show polls created by user */
         if (poll.owner) {
           onPollPushed();
           continue;
         }
 
+        /* Push the data of the poll to show to the user */
         Mongo.db.collection('polls')
         .findOne( {_id: poll.poll_id }, { title: 1, creator: 1 }, function(err, doc) {
           polls.push({title: doc.title, creator: doc.creator, id_select: poll.id_select});
           onPollPushed();
         });
 
+      }
+
+    });
+
+  },
+
+  findUserPollBySelectCode: function(user, code, callback) {
+
+    Mongo.db.collection('users').findOne(
+      { user: user },
+      { user: 1, availablePolls: { $elemMatch: { id_select: code } } },
+    function(err, document) {
+
+      if (!document.hasOwnProperty('availablePolls')) {
+        callback(null);
+
+      } else if (document.availablePolls[0].owner) {
+        callback("own");
+
+      } else {
+        Mongo.db.collection('polls').findOne( {_id: document.availablePolls[0].poll_id},
+        function(err, doc) {
+          if (!doc) {
+            callback("empty");
+          } else {
+            callback(doc);
+          }
+        });
       }
 
     });

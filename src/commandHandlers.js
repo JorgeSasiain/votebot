@@ -67,12 +67,31 @@ const CommandHandlers = {
 
   onSelectCommand: function(bot, botJid, data, user, type) {
 
-    if (type == 'groupchat') {
-      let body = 'Comando no disponible en chat grupal: /' + data;
+    let body = '';
+    user = user.substr(0, user.indexOf("/"));
+
+    let callback = function(poll) {
+
+      if (!poll) {
+        body = '¡El código de selección especificado no es correcto!';
+      } else if (poll === "own") {
+        body = '¡No puedes votar en una encuesta creada por tí!';
+      } else if (poll === "empty") {
+        body = 'La encuesta seleccionada no existe.';
+      } else {
+        body = 'Seleccionada encuesta "' + poll.title + '".';
+      }
       Utils.sendStanza(bot, botJid, user, 'chat', body);
-      return;
+
     }
-    console.log(">Select command: " + data);
+
+    if (type == 'groupchat') {
+      body = 'Comando no disponible en chat grupal: /' + data;
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
+
+    } else {
+      Mongo.findUserPollBySelectCode(user, data.slice(-5), callback);
+    }
 
   },
 
