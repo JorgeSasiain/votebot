@@ -43,6 +43,7 @@ const Mongo = {
   },
 
   /* Check for polls that are about to expire */
+  /* Also checks that there is an open connection (every minute) */
   getAboutToExpirePollsID: function(callback) {
 
     let _getAboutToExpirePollsID = function(triggerDates, callback) {
@@ -137,6 +138,38 @@ const Mongo = {
       });
 
     }
+
+  },
+
+  getUserAvailablePolls: function(user, callback) {
+
+    let polls = [];
+    let numPolls = 0;
+    let onPollPushed = function() {
+      numPolls --;
+      if (!numPolls) callback(polls.length ? polls : false)
+    }
+
+    Mongo.db.collection('users').findOne({ user: user }, function(err, document) {
+
+      numPolls = document.availablePolls.length;
+
+      for (let poll of document.availablePolls) {
+
+        if (poll.owner) {
+          onPollPushed();
+          continue;
+        }
+
+        Mongo.db.collection('polls')
+        .findOne( {_id: poll.poll_id }, { title: 1, creator: 1 }, function(err, doc) {
+          polls.push({title: doc.title, creator: doc.creator, id_select: poll.id_select});
+          onPollPushed();
+        });
+
+      }
+
+    });
 
   }
 

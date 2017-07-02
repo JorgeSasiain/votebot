@@ -1,4 +1,5 @@
 const Client = require('node-xmpp-client');
+import Mongo from './mongo';
 import Utils from './utils';
 
 const CommandHandlers = {
@@ -7,7 +8,7 @@ const CommandHandlers = {
      bot:    node-xmpp client
      botJid: bare JID of bot (response sender)
      data:   command message received drom user
-     user:   bare JID of user or occupant JID of room user (response receiver)
+     user:   full JID of user or occupant JID of room user (response receiver)
      type:   type of message: chat or groupchat
   */
 
@@ -35,12 +36,32 @@ const CommandHandlers = {
 
   onListCommand: function(bot, botJid, data, user, type) {
 
+    let body = '';
+    user = user.substr(0, user.indexOf("/"));
+
+    let callback = function(polls) {
+
+      if (!polls) {
+        body = '¡No hay ninguna encuesta disponible!';
+
+      } else {
+        for (let poll of polls) {
+          body += '\n*' + poll.title + '*\n' +
+                  'Creada por: ' + poll.creator +
+                  'ID: ' + poll.id_select + '\n'
+                  ;
+        }
+        Utils.sendStanza(bot, botJid, user, 'chat', body);
+      }
+    };
+
     if (type == 'groupchat') {
-      let body = 'Comando no disponible en chat grupal: /' + data;
+      body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
-      return;
+
+    } else {
+      Mongo.getUserAvailablePolls(user, callback);
     }
-    console.log(">List command: " + data);
 
   },
 
