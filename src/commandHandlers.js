@@ -47,8 +47,8 @@ const CommandHandlers = {
       } else {
         for (let poll of polls) {
           body += '\n*' + poll.title + '*\n' +
-                  'Creada por: ' + poll.creator +
-                  'ID: ' + poll.id_select + '\n'
+                  'Creada por: ' + poll.creator + '\n' +
+                  'Código: ' + poll.id_select + '\n'
                   ;
         }
         Utils.sendStanza(bot, botJid, user, 'chat', body);
