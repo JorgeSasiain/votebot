@@ -30,7 +30,25 @@ const CommandHandlers = {
 
   onVoteCommand: function(bot, botJid, data, user, type) {
 
-    console.log(">Vote command: " + data);
+    let body = '';
+    user = user.substr(0, user.indexOf("/"));
+
+    if (type == 'groupchat' || user.includes('@conference.')) {
+
+      console.log(">Vote command: " + data);
+
+    } else {
+
+      let choices =
+        [data.includes('1'), data.includes('2'), data.includes('3'), data.includes('4')];
+
+      let callback = function(numQt, name, multiple, choices) {
+        Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);
+      }
+
+      Mongo.applyVote(user, choices, callback);
+
+    }
 
   },
 

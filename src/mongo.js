@@ -170,7 +170,8 @@ const Mongo = {
         /* Push the data of the poll to show to the user */
         Mongo.db.collection('polls')
         .findOne( {_id: poll.poll_id }, { title: 1, creator: 1 }, function(err, doc) {
-          polls.push({title: doc.title, creator: doc.creator, id_select: poll.id_select});
+          if (doc)
+            polls.push({title: doc.title, creator: doc.creator, id_select: poll.id_select});
           onPollPushed();
         });
 
@@ -218,7 +219,7 @@ const Mongo = {
     let session = {};
     session.poll_id = poll_id;
     session.numQt = 0;
-    session.votes = {};
+    session.votes = [];
 
     Mongo.db.collection('users').updateOne({user: user}, {$set: {session: session}},
     function(err, result) {
@@ -241,18 +242,69 @@ const Mongo = {
     Mongo.db.collection('users').findOne({user: user}, {session: 1},
     function(err, document) {
 
+      if (err || !document) {
+        callback("err", null, null, null);
+        Mongo.eraseSessionData(user);
+        return;
+      }
+
       Mongo.db.collection('polls').findOne({_id: document.session.poll_id}, {questions: 1},
       function(err, doc) {
+
+        /* Error occurred */
+        if (err || !doc) {
+          callback("err", null, null, null);
+          Mongo.eraseSessionData(user);
+          return;
+        }
+
+        /* No more questions. Poll finished */
         let numQt = document.session.numQt;
+        if (numQt >= doc.questions.length) {
+          callback(null, null, null, null);
+          Mongo.eraseSessionData(user);
+          return;
+        }
+
+        /* Another question available */
         let name = doc.questions[numQt].question;
         let multiple = doc.questions[numQt].multiple;
         let choices = doc.questions[numQt].choices;
         callback(numQt, name, multiple, choices);
+
       });
 
     });
 
   },
+
+  applyVote: function(user, choices, callback) {
+
+    Mongo.db.collection('users').findOne({user: user}, {session: 1},
+    function(err, document) {
+
+      if (err || !document) {
+        callback("err", null, null, null);
+        Mongo.eraseSessionData(user);
+        return;
+      }
+
+      let numQt = document.session.numQt;
+      Mongo.db.collection('users').updateOne({user: user},
+        { $push: {"session.votes": choices}, $inc: {"session.numQt": 1} },
+        function(err, result) {
+          if (err || !result) {
+            if (err) console.log("2"+err);
+            callback("err", null, null, null);
+            Mongo.eraseSessionData(user);
+            return;
+          }
+          Mongo.getNextQuestion(user, callback);
+        });
+
+    });
+
+  }
 
 }
 
