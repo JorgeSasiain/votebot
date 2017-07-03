@@ -175,7 +175,8 @@ bot.on('stanza', function(stanza) {
   if (body) {
 
     /* Send echo to owner account */
-    Utils.sendStanza(bot, ACCOUNTS.BOT_JID, ACCOUNTS.OWNER, 'chat', 'RECEIVED MESSAGE:\n' + body);
+    Utils.sendStanza(
+      bot, ACCOUNTS.BOT_JID, ACCOUNTS.OWNER, 'chat', 'REC MSG (' + user + '):\n' + body);
 
     /* Handle commands */
     if (body.startsWith("/") || body.startsWith("*")) {

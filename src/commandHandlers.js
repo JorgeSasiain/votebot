@@ -55,7 +55,7 @@ const CommandHandlers = {
       }
     };
 
-    if (type == 'groupchat') {
+    if (type == 'groupchat' || user.includes('@conference.')) {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
 
@@ -102,7 +102,7 @@ const CommandHandlers = {
 
     }
 
-    if (type == 'groupchat') {
+    if (type == 'groupchat' || user.includes('@conference.')) {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
 
@@ -114,7 +114,7 @@ const CommandHandlers = {
 
   onDiscardCommand: function(bot, botJid, data, user, type) {
 
-    if (type == 'groupchat') {
+    if (type == 'groupchat' || user.includes('@conference.')) {
       let body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
       return;
@@ -125,7 +125,7 @@ const CommandHandlers = {
 
   onBackCommand: function(bot, botJid, data, user, type) {
 
-    if (type == 'groupchat') {
+    if (type == 'groupchat' || user.includes('@conference.')) {
       let body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
       return;

@@ -153,6 +153,10 @@ const Mongo = {
 
     Mongo.db.collection('users').findOne({ user: user }, function(err, document) {
 
+      if (!document.hasOwnProperty('availablePolls')) {
+        callback(false);
+        return;
+      }
       numPolls = document.availablePolls.length;
 
       for (let poll of document.availablePolls) {
