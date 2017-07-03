@@ -2,6 +2,7 @@ const Client = require('node-xmpp-client');
 
 const Utils = {
 
+  /* Send a XMPP stanza from 'from_' to each 'to'*/
   sendStanza: function(sender, from_, to, type, body) {
 
     let _sendStanza = function(sender, from_, to, type, body) {
@@ -30,6 +31,7 @@ const Utils = {
 
   },
 
+  /* Send presence stanza to 'mucs' to attempt to join them */
   joinMucs: function(sender, mucs) {
 
     let i = 1;
@@ -51,16 +53,24 @@ const Utils = {
 
   },
 
+  /* Send next question of current poll */
   sendPollQuestion: function(bot, botJid, user, numQt, name, multiple, choices) {
 
       let body = '';
 
+      /* Last question was answered */
       if (numQt === null) {
         body = 'Encuesta finalizada.';
 
+      /* /v command was used without session data */
+      } else if (numQt === "notNow") {
+        body = 'Selecciona primero una encuesta para votar';
+
+      /* Database error occurred */
       } else if (numQt === "err") {
         body = 'Ha ocurrido un error. Es posible que la encuesta haya sido borrada.';
 
+      /* Ok: Send next question */
       } else {
         let btn = multiple ? '□' : '○' ;
         body = 'Pregunta ' + (numQt + 1) + ':\n' + name + '\n';

@@ -124,6 +124,12 @@ const CommandHandlers = {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
 
+    /*
+    } else if ('sessionDataNotNull') {
+      body = 'Finaliza primero la encuesta actual';
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
+
+    */
     } else {
       Mongo.findUserPollBySelectCode(user, data.slice(-5), callback);
     }

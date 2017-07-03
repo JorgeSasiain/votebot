@@ -214,6 +214,7 @@ const Mongo = {
 
   },
 
+  /* Init user's session data when a poll is selected */
   initSessionData: function(user, poll_id, callback) {
 
     let session = {};
@@ -231,12 +232,14 @@ const Mongo = {
 
   },
 
+  /* Erase user's session data after voting in a poll is finished */
   eraseSessionData: function(user) {
 
     Mongo.db.collection('users').updateOne({user: user}, {$unset: {session: 1}});
 
   },
 
+  /* Get next question of poll to send to user, or finish if no more questions */
   getNextQuestion: function(user, callback) {
 
     Mongo.db.collection('users').findOne({user: user}, {session: 1},
@@ -263,6 +266,7 @@ const Mongo = {
         if (numQt >= doc.questions.length) {
           callback(null, null, null, null);
           Mongo.eraseSessionData(user);
+          //Mongo.deleteFromAvailablePolls(user, document.session.poll_id);
           return;
         }
 
@@ -278,17 +282,26 @@ const Mongo = {
 
   },
 
+  /* Apply user's vote in a question */
   applyVote: function(user, choices, callback) {
 
     Mongo.db.collection('users').findOne({user: user}, {session: 1},
     function(err, document) {
 
+      /* Error occurred */
       if (err || !document) {
         callback("err", null, null, null);
         Mongo.eraseSessionData(user);
         return;
       }
 
+      /* Np session data (user has not selected a poll) */
+      if (!document.hasOwnProperty('session')) {
+        callback("notNow", null, null, null);
+        return;
+      }
+
+      /* Vote OK */
       let numQt = document.session.numQt;
       Mongo.db.collection('users').updateOne({user: user},
         { $push: {"session.votes": choices}, $inc: {"session.numQt": 1} },
