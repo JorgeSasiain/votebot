@@ -49,6 +49,17 @@ const Utils = {
 
     }
 
+  },
+
+  sendPollQuestion: function(bot, botJid, user, numQt, name, multiple, choices) {
+
+      let btn = multiple ? '□' : '○' ;
+      let body = 'Pregunta ' + (numQt + 1) + ':\n' + name + '\n';
+      choices.forEach(function(choice) {
+        body += btn + ' ' + choice + '\n';
+      });
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
+
   }
 
 };

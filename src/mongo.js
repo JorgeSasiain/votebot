@@ -176,6 +176,7 @@ const Mongo = {
 
   },
 
+  /* Check if select code received matches a user's available poll and apply callback to it*/
   findUserPollBySelectCode: function(user, code, callback) {
 
     Mongo.db.collection('users').findOne(
@@ -183,17 +184,21 @@ const Mongo = {
       { user: 1, availablePolls: { $elemMatch: { id_select: code } } },
     function(err, document) {
 
+      /* No match */
       if (!document.hasOwnProperty('availablePolls')) {
         callback(null);
 
+      /* User is creator so can't vote */
       } else if (document.availablePolls[0].owner) {
         callback("own");
 
       } else {
         Mongo.db.collection('polls').findOne( {_id: document.availablePolls[0].poll_id},
         function(err, doc) {
+          /* Poll doesn't exist in database */
           if (!doc) {
             callback("empty");
+          /* Poll available for selection */
           } else {
             callback(doc);
           }
@@ -202,7 +207,48 @@ const Mongo = {
 
     });
 
-  }
+  },
+
+  initSessionData: function(user, poll_id, callback) {
+
+    let session = {};
+    session.poll_id = poll_id;
+    session.numQt = 0;
+    session.votes = {};
+
+    Mongo.db.collection('users').updateOne({user: user}, {$set: {session: session}},
+    function(err, result) {
+      if (err || !result) {
+        return;
+      }
+      callback();
+    });
+
+  },
+
+  eraseSessionData: function(user) {
+
+    Mongo.db.collection('users').updateOne({user: user}, {$unset: {session: 1}});
+
+  },
+
+  getNextQuestion: function(user, callback) {
+
+    Mongo.db.collection('users').findOne({user: user}, {session: 1},
+    function(err, document) {
+
+      Mongo.db.collection('polls').findOne({_id: document.session.poll_id}, {questions: 1},
+      function(err, doc) {
+        let numQt = document.session.numQt;
+        let name = doc.questions[numQt].question;
+        let multiple = doc.questions[numQt].multiple;
+        let choices = doc.questions[numQt].choices;
+        callback(numQt, name, multiple, choices);
+      });
+
+    });
+
+  },
 
 }
 

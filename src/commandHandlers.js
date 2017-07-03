@@ -68,6 +68,7 @@ const CommandHandlers = {
   onSelectCommand: function(bot, botJid, data, user, type) {
 
     let body = '';
+    let poll_id = null;
     user = user.substr(0, user.indexOf("/"));
 
     let callback = function(poll) {
@@ -80,8 +81,24 @@ const CommandHandlers = {
         body = 'La encuesta seleccionada no existe.';
       } else {
         body = 'Seleccionada encuesta "' + poll.title + '".';
+        poll_id = poll._id;
       }
       Utils.sendStanza(bot, botJid, user, 'chat', body);
+
+      if (poll_id) {
+
+        let _callback = function() {
+
+          let __callback = function(numQt, name, multiple, choices) {
+            Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);
+          }
+
+          Mongo.getNextQuestion(user, __callback);
+        }
+
+        Mongo.initSessionData(user, poll_id, _callback);
+
+      }
 
     }
 
