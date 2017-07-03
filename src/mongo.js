@@ -123,8 +123,10 @@ const Mongo = {
       }).toArray(function(err, result) {
 
         result.forEach(function(document) {
-          mucs.push[document.muc];
+          mucs.push(document.muc);
         });
+
+        callback(mucs);
 
       });
 

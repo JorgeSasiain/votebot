@@ -57,7 +57,7 @@ async function onPollExpire(pollType, _id, title) {
     let msg = title ; // = getVoteResults()
 
     let callback = async function(mucs) {
-      await Utils.joinMucs(mucs);
+      await Utils.joinMucs(bot, mucs);
       Utils.sendStanza(bot, mucs, 'groupchat', msg);
     };
 

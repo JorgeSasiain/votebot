@@ -29,7 +29,7 @@ const Utils = {
 
   },
 
-  joinMucs: function(mucs) {
+  joinMucs: function(sender, mucs) {
 
     let i = 1;
 
@@ -37,7 +37,7 @@ const Utils = {
 
       let stanza = new Client.Stanza(
         'presence', {
-          to: muc,
+          to: muc + '/votebot',
           id: 'room'+i
         }
       )
