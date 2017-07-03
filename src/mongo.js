@@ -66,7 +66,6 @@ const Mongo = {
 
         result.forEach(function(document) {
           callback("vote", document._id, document.title);
-          /* TODO: search in collection 'mucs' for documents with this poll id */
         });
 
       });
@@ -74,8 +73,8 @@ const Mongo = {
     };
 
     let triggerTime = new Date().getTime();
-    let triggerDatePoll = new Date(triggerTime + 24 * 60 * 60000 + 2 * 60000); /* +24h 2m */
-    let triggerDateVote = new Date(triggerTime + 2 * 60000); /* +2m */
+    let triggerDatePoll = new Date(triggerTime + 24 * 60 * 60000 + 65000); /* +24h ~1m */
+    let triggerDateVote = new Date(triggerTime + 65000); /* +~1m */
 
     Mongo.connect(_getAboutToExpirePollsID, [triggerDatePoll, triggerDateVote], callback);
 
@@ -83,17 +82,17 @@ const Mongo = {
 
   onPollExpire: {
 
-    notifyOwner: function(_id) {
+    notifyOwner: function(_id, callback) {
 
       Mongo.db.collection('users').find(
         { availablePolls: { $elemMatch: { poll_id: _id } } },
-        { availablePolls: { $elemMatch: { poll_id: _id } } }
+        { user: 1, availablePolls: { $elemMatch: { poll_id: _id } } }
       ).toArray(function(err, result) {
 
         result.forEach(function(document) {
           if (document.hasOwnProperty('availablePolls')) {
             if (document.availablePolls[0].owner === true) {
-              return document.availablePolls[0].user;
+              callback(document.user);
             }
           }
         });
@@ -108,6 +107,26 @@ const Mongo = {
         { },
         { $pull: { availablePolls: { poll_id: _id } } }
       );
+
+    }
+
+  },
+
+  onVoteExpire: {
+
+    notifyMucs: function(_id, callback) {
+
+      let mucs = [];
+
+      Mongo.db.collection('mucs').find({
+        poll_id: _id
+      }).toArray(function(err, result) {
+
+        result.forEach(function(document) {
+          mucs.push[document.muc];
+        });
+
+      });
 
     }
 

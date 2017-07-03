@@ -17,7 +17,7 @@ try {
 const app = new Express();
 const server = new Server(app);
 const PORT = process.env.PORT || 3001;
-const TIMER = 60000;
+const TIMER = 6000;//0
 
 const Client = require('node-xmpp-client');
 
@@ -43,12 +43,25 @@ async function onPollExpire(pollType, _id, title) {
     let owner = "";
     let msg = 'Los resultados finales de tu encuesta "' + title +
     '" están disponibles en la página web!';
-    owner = await Mongo.onPollExpire.notifyOwner(_id);
-    Utils.sendStanza(bot, owner, 'chat', msg);
-    Mongo.onPollExpire.deleteFromUsersAvailablePolls(_id);
+
+    let callback = function(owner) {
+      Utils.sendStanza(bot, owner, 'chat', msg);
+      Mongo.onPollExpire.deleteFromUsersAvailablePolls(_id);
+    };
+
+    Mongo.onPollExpire.notifyOwner(_id, callback);
 
   } else if (pollType === "vote") {
 
+    let mucs = [];
+    let msg = title ; // = getVoteResults()
+
+    let callback = async function(mucs) {
+      await Utils.joinMucs(mucs);
+      Utils.sendStanza(bot, mucs, 'groupchat', msg);
+    };
+
+    Mongo.onVoteExpire.notifyMucs(_id, callback);
   }
 
 }
