@@ -67,18 +67,18 @@ function onPollExpire(pollType, _id, title) {
 }
 
 /* Function to handle user commands */
-function handleCommand(bot, body, user) {
+function handleCommand(bot, body, user, type) {
 
   /* Vote command */
   if (new RegExp(/^v [1-4]{1,4}$|^vote [1-4]{1,4}$|^votar [1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(bot, ACCOUNTS.BOT_JID, body, user);
+    CommandHandlers.onVoteCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
     return;
   }
 
   /* Select command */
   if (new RegExp(/^s [A-Za-z0-9]{5}$|^select [A-Za-z0-9]{5}$|^seleccionar [A-Za-z0-9]{5}$/)
     .test(body)) {
-    CommandHandlers.onSelectCommand(bot, ACCOUNTS.BOT_JID, body, user);
+    CommandHandlers.onSelectCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
     return;
   }
 
@@ -90,30 +90,30 @@ function handleCommand(bot, body, user) {
     case 'help':
     case 'commands':
     case 'comandos':
-      CommandHandlers.onHelpCommand(bot, ACCOUNTS.BOT_JID, body, user);
+      CommandHandlers.onHelpCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     case 'l':
     case 'list':
     case 'listado':
-      CommandHandlers.onListCommand(bot, ACCOUNTS.BOT_JID, body, user);
+      CommandHandlers.onListCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     case 'd':
     case 'discard':
     case 'descartar':
-      CommandHandlers.onDiscardCommand(bot, ACCOUNTS.BOT_JID, body, user);
+      CommandHandlers.onDiscardCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     case 'b':
     case 'a':
     case 'back':
     case 'atras':
-      CommandHandlers.onBackCommand(bot, ACCOUNTS.BOT_JID, body, user);
+      CommandHandlers.onBackCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     default:
-      CommandHandlers.onCommandError(bot, ACCOUNTS.BOT_JID, body, user);
+      CommandHandlers.onCommandError(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
   }
 
@@ -166,6 +166,9 @@ bot.on('online', function(data) {
 /* When bot receives a message */
 bot.on('stanza', function(stanza) {
 
+  if (!stanza.is('message')) return;
+
+  let type = stanza.attrs.type;
   let user = stanza.attrs.from;
 	let body = stanza.getChildText('body');
 
@@ -176,7 +179,7 @@ bot.on('stanza', function(stanza) {
 
     /* Handle commands */
     if (body.startsWith("/") || body.startsWith("*")) {
-      handleCommand(bot, body.substr(1), user);
+      handleCommand(bot, body.substr(1), user, type);
       return;
     }
 
