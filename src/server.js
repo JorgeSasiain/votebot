@@ -34,31 +34,31 @@ function monitorTTLs() {
 }
 
 /* Handle notifications to users or to groupchat and other operations when a poll expires*/
-async function onPollExpire(pollType, _id, title) {
+function onPollExpire(pollType, _id, title) {
 
   console.log("A poll is about to expire! - " + _id);
 
   if (pollType === "poll") {
 
-    let owner = "";
+    let pollOwner = "";
     let msg = 'Los resultados finales de tu encuesta "' + title +
     '" están disponibles en la página web!';
 
-    let callback = function(owner) {
-      Utils.sendStanza(bot, owner, 'chat', msg);
+    let callback = function(pollOwner) {
+      Utils.sendStanza(bot, ACCOUNTS.BOT_JID, pollOwner, 'chat', msg);
       Mongo.onPollExpire.deleteFromUsersAvailablePolls(_id);
     };
 
-    Mongo.onPollExpire.notifyOwner(_id, callback);
+    Mongo.onPollExpire.notifyPollOwner(_id, callback);
 
   } else if (pollType === "vote") {
 
     let mucs = [];
-    let msg = title ; // = getVoteResults()
+    let msg = "La votación " + title + " ha terminado." ; // = getVoteResults()
 
-    let callback = async function(mucs) {
-      await Utils.joinMucs(bot, mucs);
-      Utils.sendStanza(bot, mucs, 'groupchat', msg);
+    let callback = function(mucs) {
+      Utils.joinMucs(bot, mucs);
+      Utils.sendStanza(bot, ACCOUNTS.BOT_JID, mucs, 'groupchat', msg);
     };
 
     Mongo.onVoteExpire.notifyMucs(_id, callback);
@@ -71,14 +71,14 @@ function handleCommand(bot, body, user) {
 
   /* Vote command */
   if (new RegExp(/^v [1-4]{1,4}$|^vote [1-4]{1,4}$|^votar [1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(bot, body, user);
+    CommandHandlers.onVoteCommand(bot, ACCOUNTS.BOT_JID, body, user);
     return;
   }
 
   /* Select command */
   if (new RegExp(/^s [A-Za-z0-9]{5}$|^select [A-Za-z0-9]{5}$|^seleccionar [A-Za-z0-9]{5}$/)
     .test(body)) {
-    CommandHandlers.onSelectCommand(bot, body, user);
+    CommandHandlers.onSelectCommand(bot, ACCOUNTS.BOT_JID, body, user);
     return;
   }
 
@@ -90,30 +90,30 @@ function handleCommand(bot, body, user) {
     case 'help':
     case 'commands':
     case 'comandos':
-      CommandHandlers.onHelpCommand(bot, body, user);
+      CommandHandlers.onHelpCommand(bot, ACCOUNTS.BOT_JID, body, user);
       break;
 
     case 'l':
     case 'list':
     case 'listado':
-      CommandHandlers.onListCommand(bot, body, user);
+      CommandHandlers.onListCommand(bot, ACCOUNTS.BOT_JID, body, user);
       break;
 
     case 'd':
     case 'discard':
     case 'descartar':
-      CommandHandlers.onDiscardCommand(bot, body, user);
+      CommandHandlers.onDiscardCommand(bot, ACCOUNTS.BOT_JID, body, user);
       break;
 
     case 'b':
     case 'a':
     case 'back':
     case 'atras':
-      CommandHandlers.onBackCommand(bot, body, user);
+      CommandHandlers.onBackCommand(bot, ACCOUNTS.BOT_JID, body, user);
       break;
 
     default:
-      CommandHandlers.onCommandError(bot, body, user);
+      CommandHandlers.onCommandError(bot, ACCOUNTS.BOT_JID, body, user);
       break;
   }
 
@@ -126,12 +126,12 @@ function handleStanza(bot, body, user) {
 
     case 'newPoll':
       if (assertProps(body, ['contacts', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewPoll(bot, body);
+        StanzaHandlers.onNewPoll(bot, ACCOUNTS.BOT_JID, body);
       break;
 
     case 'newVote':
       if (assertProps(body, ['mucs', 'pollTitle', 'creator']))
-        StanzaHandlers.onNewVote(bot, body);
+        StanzaHandlers.onNewVote(bot, ACCOUNTS.BOT_JID, body);
       break;
   }
 
@@ -159,7 +159,7 @@ bot.on('online', function(data) {
     'Bot connected via votebot app: ' + jid.local + '@' + jid.domain + '/' + jid.resource;
 
   bot.send('<presence/>');
-  Utils.sendStanza(bot, ACCOUNTS.OWNER, 'chat', onOnlineMessage);
+  Utils.sendStanza(bot, ACCOUNTS.BOT_JID, ACCOUNTS.OWNER, 'chat', onOnlineMessage);
 
 });
 
@@ -172,7 +172,7 @@ bot.on('stanza', function(stanza) {
   if (body) {
 
     /* Send echo to owner account */
-    Utils.sendStanza(bot, ACCOUNTS.OWNER, 'chat', 'RECEIVED MESSAGE:\n' + body);
+    Utils.sendStanza(bot, ACCOUNTS.BOT_JID, ACCOUNTS.OWNER, 'chat', 'RECEIVED MESSAGE:\n' + body);
 
     /* Handle commands */
     if (body.startsWith("/") || body.startsWith("*")) {

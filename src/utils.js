@@ -2,12 +2,13 @@ const Client = require('node-xmpp-client');
 
 const Utils = {
 
-  sendStanza: function(sender, to, type, body) {
+  sendStanza: function(sender, from_, to, type, body) {
 
-    let _sendStanza = function(sender, to, type, body) {
+    let _sendStanza = function(sender, from_, to, type, body) {
 
       let stanza = new Client.Stanza(
         'message', {
+          from: from_,
           to: to,
           type: type
         }
@@ -21,11 +22,11 @@ const Utils = {
 
     if (Array.isArray(to)) {
       for (let _to of to) {
-        _sendStanza(sender, _to, type, body);
+        _sendStanza(sender, from_, _to, type, body);
       }
       return;
     }
-    _sendStanza(sender, to, type, body);
+    _sendStanza(sender, from_, to, type, body);
 
   },
 

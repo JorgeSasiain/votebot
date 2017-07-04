@@ -65,7 +65,7 @@ const Mongo = {
       }).toArray(function(err, result) {
 
         result.forEach(function(document) {
-          callback("vote", document._id, document.title);
+          callback("vote", document._id, document.questions[0].question);
         });
 
       });
@@ -82,7 +82,7 @@ const Mongo = {
 
   onPollExpire: {
 
-    notifyOwner: function(_id, callback) {
+    notifyPollOwner: function(_id, callback) {
 
       Mongo.db.collection('users').find(
         { availablePolls: { $elemMatch: { poll_id: _id } } },

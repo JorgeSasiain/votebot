@@ -3,7 +3,7 @@ import Utils from './utils';
 
 const CommandHandlers = {
 
-  onHelpCommand: function(bot, data, user) {
+  onHelpCommand: function(bot, botJid, data, user) {
 
     let body = '\n*COMANDOS GENERALES*\n' +
                '/c, /comandos: mostrar comandos disponibles\n' +
@@ -15,33 +15,33 @@ const CommandHandlers = {
                '/a, /atras: cambiar voto en pregunta anterior\n'
                ;
 
-    Utils.sendStanza(bot, user, 'chat', body);
+    Utils.sendStanza(bot, botJid, user, 'chat', body);
 
   },
 
-  onVoteCommand: function(bot, data, user) {
+  onVoteCommand: function(bot, botJid, data, user) {
     console.log(">Vote command: " + data);
   },
 
-  onListCommand: function(bot, data, user) {
+  onListCommand: function(bot, botJid, data, user) {
     console.log(">List command: " + data);
   },
 
-  onSelectCommand: function(bot, data, user) {
+  onSelectCommand: function(bot, botJid, data, user) {
     console.log(">Select command: " + data);
   },
 
-  onDiscardCommand: function(bot, data, user) {
+  onDiscardCommand: function(bot, botJid, data, user) {
     console.log(">Discard command: " + data);
   },
 
-  onBackCommand: function(bot, data, user) {
+  onBackCommand: function(bot, botJid, data, user) {
     console.log(">Back command: " + data);
   },
 
-  onCommandError: function(bot, data, user) {
+  onCommandError: function(bot, botJid, data, user) {
     let body = 'Comando erróneo o desconocido: ' + data;
-    Utils.sendStanza(bot, user, 'chat', body);
+    Utils.sendStanza(bot, botJid, user, 'chat', body);
   }
 
 };
