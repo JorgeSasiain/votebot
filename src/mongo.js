@@ -11,8 +11,10 @@ const Mongo = {
 
   MONGO_URI: MONGO_URI,
 
+  /* Connection instance */
   db: null,
 
+  /* Function to create a connection pool to the database and execute the passed callback */
   connect: function(callback, param1, param2) {
 
     if (Mongo.db) {
@@ -31,6 +33,7 @@ const Mongo = {
 
   },
 
+  /* Close the connection pool to the database */
   close: function() {
     if (Mongo.db) {
       Mongo.db.close(function(err, result) {
@@ -39,6 +42,7 @@ const Mongo = {
     }
   },
 
+  /* Check for polls that are about to expire */
   getAboutToExpirePollsID: function(callback) {
 
     let _getAboutToExpirePollsID = function(triggerDates, callback) {
@@ -80,6 +84,7 @@ const Mongo = {
 
   },
 
+  /* Functions to handle a poll expiring */
   onPollExpire: {
 
     notifyPollOwner: function(_id, callback) {
@@ -112,6 +117,7 @@ const Mongo = {
 
   },
 
+  /* Functions to handle a vote expiring */
   onVoteExpire: {
 
     notifyMucs: function(_id, callback) {

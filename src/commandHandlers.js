@@ -3,12 +3,12 @@ import Utils from './utils';
 
 const CommandHandlers = {
 
-  /* PARAMS
-    bot:    node-xmpp client
-    botJid: JID of bot (response sender)
-    data:   command message received drom user
-    user:   JID of user (response receiver)
-    type:   type of message: chat or groupchat
+  /* COMMAND PARAMS
+     bot:    node-xmpp client
+     botJid: bare JID of bot (response sender)
+     data:   command message received drom user
+     user:   bare JID of user or occupant JID of room user (response receiver)
+     type:   type of message: chat or groupchat
   */
 
   onHelpCommand: function(bot, botJid, data, user, type) {
