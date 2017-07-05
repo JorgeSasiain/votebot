@@ -366,10 +366,7 @@ const Mongo = {
     if (!Mongo.db) return;
 
     Mongo.db.collection('polls').updateOne({_id: votingResults.poll_id}, { /*
-      questions: { $map: {input: "$questions", as: "elem", in: {
-        "$$elem.choices":
-          { $map: {input: "$elem.choices", as: "_elem", in: {$add: ["$$_elem", "votingResults.votes"} } }
-      } } }
+      TODO
     */
     },
     function(err, result) {
@@ -386,7 +383,7 @@ const Mongo = {
 
     Mongo.db.collection('users').updateMany(
       { user: user },
-      { $pull: { availablePolls: { poll_id: _id } } }
+      { $pull: { availablePolls: { poll_id: poll_id } } }
     );
 
   },
