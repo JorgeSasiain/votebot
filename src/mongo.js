@@ -90,6 +90,8 @@ const Mongo = {
 
     notifyPollOwner: function(_id, callback) {
 
+      if (!Mongo.db) return;
+
       Mongo.db.collection('users').find(
         { availablePolls: { $elemMatch: { poll_id: _id } } },
         { user: 1, availablePolls: { $elemMatch: { poll_id: _id } } }
@@ -109,6 +111,8 @@ const Mongo = {
 
     deleteFromUsersAvailablePolls: function(_id) {
 
+      if (!Mongo.db) return;
+
       Mongo.db.collection('users').updateMany(
         { },
         { $pull: { availablePolls: { poll_id: _id } } }
@@ -122,6 +126,8 @@ const Mongo = {
   onVoteExpire: {
 
     notifyMucs: function(_id, callback) {
+
+      if (!Mongo.db) return;
 
       let mucs = [];
 
@@ -143,6 +149,8 @@ const Mongo = {
 
   /* Apply callback to each poll available to the specified user */
   getUserAvailablePolls: function(user, callback) {
+
+    if (!Mongo.db) return;
 
     let polls = [];
     let numPolls = 0;
@@ -184,13 +192,19 @@ const Mongo = {
   /* Check if select code received matches a user's available poll and apply callback to it*/
   findUserPollBySelectCode: function(user, code, callback) {
 
+    if (!Mongo.db) return;
+
     Mongo.db.collection('users').findOne(
       { user: user },
-      { user: 1, availablePolls: { $elemMatch: { id_select: code } } },
+      { user: 1, session: 1, availablePolls: { $elemMatch: { id_select: code } } },
     function(err, document) {
 
+      /* Another poll already selected */
+      if (document.hasOwnProperty('session')) {
+        callback("cant");
+
       /* No match */
-      if (!document.hasOwnProperty('availablePolls')) {
+      } else if (!document.hasOwnProperty('availablePolls')) {
         callback(null);
 
       /* User is creator so can't vote */
@@ -217,6 +231,8 @@ const Mongo = {
   /* Init user's session data when a poll is selected */
   initSessionData: function(user, poll_id, callback) {
 
+    if (!Mongo.db) return;
+
     let session = {};
     session.poll_id = poll_id;
     session.numQt = 0;
@@ -232,22 +248,30 @@ const Mongo = {
 
   },
 
-  /* Erase user's session data after voting in a poll is finished */
-  eraseSessionData: function(user) {
+  /* Erase user's session data after voting in a poll is finished or a poll is discarded */
+  eraseSessionData: function(user, callback) {
 
-    Mongo.db.collection('users').updateOne({user: user}, {$unset: {session: 1}});
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('users').updateOne({user: user}, {$unset: {session: 1}},
+    function(err, result) {
+      if (!err && result && callback) callback(result.result.nModified);
+    }
+    );
 
   },
 
   /* Get next question of poll to send to user, or finish if no more questions */
   getNextQuestion: function(user, callback) {
 
+    if (!Mongo.db) return;
+
     Mongo.db.collection('users').findOne({user: user}, {session: 1},
     function(err, document) {
 
       if (err || !document) {
         callback("err", null, null, null);
-        Mongo.eraseSessionData(user);
+        Mongo.eraseSessionData(user, null);
         return;
       }
 
@@ -257,7 +281,7 @@ const Mongo = {
         /* Error occurred */
         if (err || !doc) {
           callback("err", null, null, null);
-          Mongo.eraseSessionData(user);
+          Mongo.eraseSessionData(user, null);
           return;
         }
 
@@ -265,8 +289,8 @@ const Mongo = {
         let numQt = document.session.numQt;
         if (numQt >= doc.questions.length) {
           callback(null, null, null, null);
-          Mongo.eraseSessionData(user);
-          //Mongo.deleteFromAvailablePolls(user, document.session.poll_id);
+          Mongo.eraseSessionData(user, null);
+          Mongo.sumbitVotingResults(user, document);
           return;
         }
 
@@ -285,13 +309,15 @@ const Mongo = {
   /* Apply user's vote in a question */
   applyVote: function(user, choices, callback) {
 
+    if (!Mongo.db) return;
+
     Mongo.db.collection('users').findOne({user: user}, {session: 1},
     function(err, document) {
 
       /* Error occurred */
       if (err || !document) {
         callback("err", null, null, null);
-        Mongo.eraseSessionData(user);
+        Mongo.eraseSessionData(user, null);
         return;
       }
 
@@ -305,17 +331,61 @@ const Mongo = {
       let numQt = document.session.numQt;
       Mongo.db.collection('users').updateOne({user: user},
         { $push: {"session.votes": choices}, $inc: {"session.numQt": 1} },
-        function(err, result) {
-          if (err || !result) {
-            if (err) console.log("2"+err);
-            callback("err", null, null, null);
-            Mongo.eraseSessionData(user);
-            return;
-          }
-          Mongo.getNextQuestion(user, callback);
-        });
+      function(err, result) {
+        if (err || !result) {
+          if (err) console.log("2"+err);
+          callback("err", null, null, null);
+          Mongo.eraseSessionData(user, null);
+          return;
+        }
+        Mongo.getNextQuestion(user, callback);
+      });
 
     });
+
+  },
+
+  checkIfSessionDataExists: function(user, callback) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('users').findOne({user: user}, {session: 1},
+    function(err, document) {
+
+      if (!err || document) {
+        callback(document.hasOwnProperty('session'));
+      }
+
+    });
+
+  },
+
+  sumbitVotingResults: function(user, votingResults) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('polls').updateOne({_id: votingResults.poll_id}, { /*
+      questions: { $map: {input: "$questions", as: "elem", in: {
+        "$$elem.choices":
+          { $map: {input: "$elem.choices", as: "_elem", in: {$add: ["$$_elem", "votingResults.votes"} } }
+      } } }
+    */
+    },
+    function(err, result) {
+      if (!err && result)
+        Mongo.deleteFromUserAvailablePollsAfterVoting(user, votingResults.poll_id);
+    });
+
+  },
+
+  deleteFromUserAvailablePollsAfterVoting: function(user, poll_id) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('users').updateMany(
+      { user: user },
+      { $pull: { availablePolls: { poll_id: _id } } }
+    );
 
   }
 

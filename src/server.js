@@ -71,8 +71,14 @@ function handleCommand(bot, body, user, type) {
 
   /* Vote command */
   if (new RegExp(/^v [1-4]{1,4}$|^vote [1-4]{1,4}$|^votar [1-4]{1,4}$/).test(body)) {
-    CommandHandlers.onVoteCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
-    return;
+    let nok = false;
+    for (let i = body.indexOf(' '); i < body.length; i ++) {
+      if (body.indexOf(body[i]) != body.lastIndexOf(body[i])) nok = true;
+    }
+    if (!nok) {
+      CommandHandlers.onVoteCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
+      return;
+    }
   }
 
   /* Select command */

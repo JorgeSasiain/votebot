@@ -93,6 +93,8 @@ const CommandHandlers = {
 
       if (!poll) {
         body = '¡El código de selección especificado no es correcto!';
+      } else if (poll === "cant") {
+        body = 'Finaliza primero la encuesta actual.'
       } else if (poll === "own") {
         body = '¡No puedes votar en una encuesta creada por tí!';
       } else if (poll === "empty") {
@@ -124,12 +126,6 @@ const CommandHandlers = {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user, 'chat', body);
 
-    /*
-    } else if ('sessionDataNotNull') {
-      body = 'Finaliza primero la encuesta actual';
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
-
-    */
     } else {
       Mongo.findUserPollBySelectCode(user, data.slice(-5), callback);
     }
@@ -143,7 +139,13 @@ const CommandHandlers = {
       Utils.sendStanza(bot, botJid, user, 'chat', body);
       return;
     }
-    console.log(">Discard command: " + data);
+
+    let callback = function(modified) {
+      let body = modified ? 'Encuesta descartada.' : 'No hay ninguna encuesta seleccionada.';
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
+    }
+
+    Mongo.eraseSessionData(user.substr(0, user.indexOf("/")), callback);
 
   },
 
