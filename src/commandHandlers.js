@@ -44,7 +44,7 @@ const CommandHandlers = {
 
       let callback = function(numQt, name, multiple, choices) {
         Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);
-      }
+      };
 
       Mongo.applyVote(user, choices, callback);
 
@@ -120,7 +120,7 @@ const CommandHandlers = {
 
       }
 
-    }
+    };
 
     if (type == 'groupchat' || user.includes('@conference.')) {
       body = 'Comando no disponible en chat grupal: /' + data;
@@ -143,7 +143,7 @@ const CommandHandlers = {
     let callback = function(modified) {
       let body = modified ? 'Encuesta descartada.' : 'No hay ninguna encuesta seleccionada.';
       Utils.sendStanza(bot, botJid, user, 'chat', body);
-    }
+    };
 
     Mongo.eraseSessionData(user.substr(0, user.indexOf("/")), callback);
 
@@ -169,7 +169,7 @@ const CommandHandlers = {
       } else {
         Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);
       }
-    }
+    };
 
     Mongo.goBackToLastQuestion(user.substr(0, user.indexOf("/")), callback);
 
