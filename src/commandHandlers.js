@@ -156,7 +156,22 @@ const CommandHandlers = {
       Utils.sendStanza(bot, botJid, user, 'chat', body);
       return;
     }
-    console.log(">Back command: " + data);
+
+    let body = '';
+
+    let callback = function(numQt, name, multiple, choices) {
+      if (numQt === 'notSel') {
+        body = 'No hay ninguna encuesta seleccionada.';
+        Utils.sendStanza(bot, botJid, user, 'chat', body);
+      } else if (numQt === 'cant') {
+        body = '¡Todavía no has empezado a votar!';
+        Utils.sendStanza(bot, botJid, user, 'chat', body);
+      } else {
+        Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);
+      }
+    }
+
+    Mongo.goBackToLastQuestion(user.substr(0, user.indexOf("/")), callback);
 
   },
 

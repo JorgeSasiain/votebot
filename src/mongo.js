@@ -189,7 +189,7 @@ const Mongo = {
 
   },
 
-  /* Check if select code received matches a user's available poll and apply callback to it*/
+  /* Check if select code received matches a user's available poll and apply callback to it */
   findUserPollBySelectCode: function(user, code, callback) {
 
     if (!Mongo.db) return;
@@ -333,7 +333,6 @@ const Mongo = {
         { $push: {"session.votes": choices}, $inc: {"session.numQt": 1} },
       function(err, result) {
         if (err || !result) {
-          if (err) console.log("2"+err);
           callback("err", null, null, null);
           Mongo.eraseSessionData(user, null);
           return;
@@ -345,6 +344,7 @@ const Mongo = {
 
   },
 
+  /* Check if user is voting in any poll at the moment */
   checkIfSessionDataExists: function(user, callback) {
 
     if (!Mongo.db) return;
@@ -360,6 +360,7 @@ const Mongo = {
 
   },
 
+  /* Apply voting results to corresponding document in 'polls' collection */
   sumbitVotingResults: function(user, votingResults) {
 
     if (!Mongo.db) return;
@@ -378,6 +379,7 @@ const Mongo = {
 
   },
 
+  /* Update user's available polls after voting so they can't vote in same poll more than once */
   deleteFromUserAvailablePollsAfterVoting: function(user, poll_id) {
 
     if (!Mongo.db) return;
@@ -386,6 +388,45 @@ const Mongo = {
       { user: user },
       { $pull: { availablePolls: { poll_id: _id } } }
     );
+
+  },
+
+  /* Redo last poll question if able and update user's session data to reflect it */
+  goBackToLastQuestion: function(user, callback) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('users').findOne({user: user},
+    function(err, document) {
+
+      if (err || !document) {
+        return;
+      }
+
+      /* Not voting */
+      if (!document.hasOwnProperty('session')) {
+        callback("notSel", null, null, null);
+        return;
+      }
+
+      /* It's the first question */
+      if (document.session.numQt === 0) {
+        callback("cant", null, null, null);
+        return;
+      }
+
+      /* Go back OK */
+      Mongo.db.collection('users').updateOne({user: user},
+        { $pop: {"session.votes": 1}, $inc: {"session.numQt": -1} },
+
+      function(err, result) {
+        if (err || !result) {
+          return;
+        }
+        Mongo.getNextQuestion(user, callback);
+      });
+
+    });
 
   }
 
