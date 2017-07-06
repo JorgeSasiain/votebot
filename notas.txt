@@ -1,6 +1,5 @@
 TODO
 
-- Obtener nombre de MUC actual para identificar encuesta.
 - Mostrar información de votación cada x minutos
 - Mostrar resultados de votación en MUC (cuando caduca, y tras votar en mensaje groupchat(?))
 - Evitar que el mismo usuario pueda votar varias veces en una misma votación

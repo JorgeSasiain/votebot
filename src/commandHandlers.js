@@ -47,8 +47,7 @@ const CommandHandlers = {
         Mongo.sumbitVotingResults(null, votingResults);
       }
 
-      //TODO get muc name
-      Mongo.getPollIDInMUC("2460kon85dnfd@conference.jabber.rueckgr.at", callback);
+      Mongo.getPollIDInMUC(user, callback);
 
     } else {
 

@@ -464,6 +464,7 @@ const Mongo = {
 
   },
 
+  /* Get the _id field of the poll that is active in the specified MUC, if any */
   getPollIDInMUC: function(muc, callback) {
 
     if (!Mongo.db) return;

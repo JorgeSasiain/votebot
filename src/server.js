@@ -167,6 +167,8 @@ bot.on('online', function(data) {
   bot.send('<presence/>');
   Utils.sendStanza(bot, ACCOUNTS.BOT_JID, ACCOUNTS.OWNER, 'chat', onOnlineMessage);
 
+  Utils.joinMucs(bot, ["2460kon85dnfd@conference.jabber.rueckgr.at"]); //TODO: delete (DEBUG)
+
 });
 
 /* When bot receives a message */
