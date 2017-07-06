@@ -56,33 +56,45 @@ const Utils = {
   /* Send next question of current poll */
   sendPollQuestion: function(bot, botJid, user, numQt, name, multiple, choices) {
 
-      let body = '';
+    let body = '';
 
-      /* Last question was answered */
-      if (numQt === null) {
-        body = 'Encuesta finalizada.';
+    /* Last question was answered */
+    if (numQt === null) {
+      body = 'Encuesta finalizada.';
 
-      /* /v command was used without session data */
-      } else if (numQt === "notNow") {
-        body = 'Selecciona primero una encuesta para votar';
+    /* /v command was used without session data */
+    } else if (numQt === "notNow") {
+      body = 'Selecciona primero una encuesta para votar';
 
-      /* Database error occurred */
-      } else if (numQt === "err") {
-        body = 'Ha ocurrido un error. Es posible que la encuesta haya sido borrada.';
+    /* Database error occurred */
+    } else if (numQt === "err") {
+      body = 'Ha ocurrido un error. Es posible que la encuesta haya sido borrada.';
 
-      } else if (numQt === "exp") {
-        body = 'La encuesta en la que estás votando ha caducado.';
+    } else if (numQt === "exp") {
+      body = 'La encuesta en la que estás votando ha caducado.';
 
-      /* Ok: Send next question */
-      } else {
-        let btn = multiple ? '□' : '○' ;
-        body = 'Pregunta ' + (numQt + 1) + ':\n' + name + '\n';
-        choices.forEach(function(choice) {
-          body += btn + ' ' + choice + '\n';
-        });
-      }
+    /* Ok: Send next question */
+    } else {
+      let btn = multiple ? '□' : '○' ;
+      body = 'Pregunta ' + (numQt + 1) + ':\n' + name + '\n';
+      choices.forEach(function(choice) {
+        body += btn + ' ' + choice + '\n';
+      });
+    }
 
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
+    Utils.sendStanza(bot, botJid, user, 'chat', body);
+
+  },
+
+  sendVoteInformation: function(bot, botJid, user, multiple, choices, body) {
+
+    let btn = multiple ? '□' : '○' ;
+
+    choices.forEach(function(choice) {
+      body += btn + ' ' + choice + '\n';
+    });
+
+    Utils.sendStanza(bot, botJid, user, 'groupchat', body);
 
   }
 
