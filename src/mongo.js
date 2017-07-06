@@ -384,6 +384,8 @@ const Mongo = {
     Mongo.db.collection('polls').findOne({_id: votingResults.poll_id}, {questions: 1},
     function(err, doc) {
 
+      if (err || !doc) return;
+
       for (let i = 0; i < doc.questions.length; i ++) {
         for (let _i = 0; _i < doc.questions[i].votes.length; _i ++) {
           if (doc.questions[i].votes[_i] !== undefined && votingResults.votes[i][_i]) {
@@ -398,7 +400,13 @@ const Mongo = {
         { $set: {questions: doc.questions} },
       function(err, result) {
         if (!err && result)
-          Mongo.deleteFromUserAvailablePollsAfterVoting(user, votingResults.poll_id);
+          /* If poll in normal chat */
+          if (user) {
+            Mongo.deleteFromUserAvailablePollsAfterVoting(user, votingResults.poll_id);
+          /* If vote in MUC */
+          } else {
+
+          }
       });
 
     });
@@ -410,7 +418,7 @@ const Mongo = {
 
     if (!Mongo.db) return;
 
-    Mongo.db.collection('users').updateMany(
+    Mongo.db.collection('users').updateOne(
       { user: user },
       { $pull: { availablePolls: { poll_id: poll_id } } }
     );
@@ -451,6 +459,24 @@ const Mongo = {
         }
         Mongo.getNextQuestion(user, callback);
       });
+
+    });
+
+  },
+
+  getPollIDInMUC: function(muc, callback) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('mucs').findOne({muc: muc},
+    function(err, document) {
+
+      if (err || !document) {
+        callback(null);
+        return;
+      }
+
+      callback(document.poll_id);
 
     });
 

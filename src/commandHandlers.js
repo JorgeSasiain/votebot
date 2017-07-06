@@ -8,7 +8,7 @@ const CommandHandlers = {
      bot:    node-xmpp client
      botJid: bare JID of bot (response sender)
      data:   command message received drom user
-     user:   full JID of user or occupant JID of room user (response receiver)
+     user:   full JID of user or occupant JID of room user (cmd sender and response receiver)
      type:   type of message: chat or groupchat
   */
 
@@ -33,14 +33,24 @@ const CommandHandlers = {
     let body = '';
     user = user.substr(0, user.indexOf("/"));
 
+    let choices =
+      [data.includes('1'), data.includes('2'), data.includes('3'), data.includes('4')];
+
     if (type == 'groupchat' || user.includes('@conference.')) {
 
-      console.log(">Vote command: " + data);
+      let votingResults = {};
+      votingResults.votes = [choices];
+
+      let callback = function(poll_id) {
+        if (!poll_id) return;
+        votingResults.poll_id = poll_id;
+        Mongo.sumbitVotingResults(null, votingResults);
+      }
+
+      //TODO get muc name
+      Mongo.getPollIDInMUC("2460kon85dnfd@conference.jabber.rueckgr.at", callback);
 
     } else {
-
-      let choices =
-        [data.includes('1'), data.includes('2'), data.includes('3'), data.includes('4')];
 
       let callback = function(numQt, name, multiple, choices) {
         Utils.sendPollQuestion(bot, botJid, user, numQt, name, multiple, choices);

@@ -54,7 +54,7 @@ function onPollExpire(pollType, _id, title) {
   } else if (pollType === "vote") {
 
     let mucs = [];
-    let msg = "La votación " + title + " ha terminado." ; // = getVoteResults()
+    let msg = "La votación " + title + " ha terminado." ; //TODO ...= getVoteResults()
 
     let callback = function(mucs) {
       Utils.joinMucs(bot, mucs);
