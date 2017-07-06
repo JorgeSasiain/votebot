@@ -17,7 +17,7 @@ try {
 const app = new Express();
 const server = new Server(app);
 const PORT = process.env.PORT || 3001;
-const TIMER = 6000;//0
+const TIMER = 6000; //TODO this is 60000
 
 const Client = require('node-xmpp-client');
 
@@ -33,7 +33,7 @@ function monitorTTLs() {
   Mongo.getAboutToExpirePollsID(onPollExpire);
 }
 
-/* Handle notifications to users or to groupchat and other operations when a poll expires*/
+/* Handle notifications to users or to groupchat and other operations when a poll expires */
 function onPollExpire(pollType, _id, title) {
 
   console.log("A poll is about to expire! - " + _id);
@@ -91,12 +91,16 @@ function handleCommand(bot, body, user, type) {
   /* Other commands */
   switch (body) {
 
+    case '':
     case 'h':
-    case 'c':
     case 'help':
+      CommandHandlers.onInfoCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
+      break;
+
+    case 'c':
     case 'commands':
     case 'comandos':
-      CommandHandlers.onHelpCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
+      CommandHandlers.onCommandsCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     case 'l':
@@ -116,6 +120,13 @@ function handleCommand(bot, body, user, type) {
     case 'back':
     case 'atras':
       CommandHandlers.onBackCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
+      break;
+
+    case 'i':
+    case 'info':
+    case 'informacion':
+    case 'información':
+      CommandHandlers.onInfoCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     default:

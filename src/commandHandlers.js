@@ -12,16 +12,56 @@ const CommandHandlers = {
      type:   type of message: chat or groupchat
   */
 
-  onHelpCommand: function(bot, botJid, data, user, type) {
+  onInfoCommand: function(bot, botJid, data, user, type) {
+
+  let body = '';
+
+  if (type == 'groupchat' || user.includes('@conference.')) {
+
+    body = 'Si existe una votación activa en esta habitación, puedes votar en ella ' +
+           'utilizando el comando /v. Añade a dicho comando la opción u opciones en ' +
+           'las que votar (ej. /v 2, /v 134). Si las opciones de la votación están ' +
+           'precedidas por ○, significa que la votación es de selección unica, y si ' +
+           'están precedidas por □, significa que puedes votar mas de una opción.\n\n' +
+           'Para ver la información y resultados hasta el momento de la votación'  +
+           'actualmente activa en la habitación, utiliza el comando /i.\n\n' +
+           'Si no quieres que tu votación sea visible para el resto de usuarios ' +
+           'conectados, puedes enviar el comando /v al bot de forma privada dentro de ' +
+           'esta habitación.'
+           ;
+
+  } else {
+
+    body = 'Para ver las encuestas disponibles, utiliza el comando /l. A continuación, ' +
+           'puedes usar el comando /s para seleccionar una de ellas por su código de ' +
+           'selección de 5 caracteres.\n\nUna vez seleccionada una encuesta, utiliza ' +
+           'el comando /v para votar en cada una de sus preguntas. ' +
+           'Añade a dicho comando la opción u opciones en las que votar ' +
+           '(ej. /v 2, /v 134). Si las opciones de la pregunta están ' +
+           'precedidas por ○, significa que es de selección unica, y si ' +
+           'están precedidas por □, significa que puedes votar mas de una opción.\n\n' +
+           'Tras votar en la pregunta actual, se enviará la siguiente pregunta de la ' +
+           'encuesta. El proceso se repetirá hasta que no queden mas preguntas.' ;
+
+  }
+
+  body += '\n\n Si necesitas mas ayuda, utiliza el comando /c para ver los comandos disponibles.'
+  Utils.sendStanza(bot, botJid, user, 'chat', body);
+
+  },
+
+  onCommandsCommand: function(bot, botJid, data, user, type) {
 
     let body = '\n*COMANDOS GENERALES*\n' +
+               '/: ayuda e información general\n' +
                '/c, /comandos: mostrar comandos disponibles\n' +
                '/l, /listado: listar encuestas disponibles\n' +
                '/s <código>, /seleccionar <código>: seleccionar encuesta\n' +
                '\n*COMANDOS DE VOTACIÓN*\n' +
-               '/v <opciones>, /votar <opciones>: votar en una pregunta\n' +
+               '/v <opciones>, /votar <opciones>: votar en una pregunta o votación\n' +
+               '/i, /info: mostrar información y resultados de votación en habitación\n' +
                '/d, /descartar: dejar de votar en encuesta\n' +
-               '/a, /atras: cambiar voto en pregunta anterior\n'
+               '/a, /atras: rehacer voto en la pregunta anterior de encuesta\n'
                ;
 
     Utils.sendStanza(bot, botJid, user, 'chat', body);
@@ -42,7 +82,9 @@ const CommandHandlers = {
       votingResults.votes = [choices];
 
       let callback = function(poll_id) {
-        if (!poll_id) return;
+        if (!poll_id)
+          Utils.sendStanza(bot, botJid, user, 'chat', 'No hay ninguna votación activa.');
+
         votingResults.poll_id = poll_id;
         Mongo.sumbitVotingResults(null, votingResults);
       }
@@ -58,6 +100,25 @@ const CommandHandlers = {
       Mongo.applyVote(user, choices, callback);
 
     }
+
+  },
+
+  onInfoCommand: function(bot, botJid, data, user, type) {
+
+    let body = '';
+    user = user.substr(0, user.indexOf("/"));
+
+    if (type == 'groupchat' || user.includes('@conference.')) {
+
+      //TODO
+
+    } else {
+
+      body = 'Comando no disponible en chat individual.';
+
+    }
+
+    Utils.sendStanza(bot, botJid, user, 'chat', body);
 
   },
 
