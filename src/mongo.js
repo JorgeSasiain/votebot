@@ -161,7 +161,7 @@ const Mongo = {
 
     Mongo.db.collection('users').findOne({ user: user }, function(err, document) {
 
-      if (!document.hasOwnProperty('availablePolls')) {
+      if (!document.hasOwnProperty('availablePolls') || !document.availablePolls.length) {
         callback(false);
         return;
       }
@@ -266,11 +266,27 @@ const Mongo = {
 
     if (!Mongo.db) return;
 
-    Mongo.db.collection('users').findOne({user: user}, {session: 1},
+    Mongo.db.collection('users').findOne({user: user},
     function(err, document) {
 
-      if (err || !document) {
+      /* Error occurred */
+      if (err || !document || !document.hasOwnProperty('availablePolls')) {
         callback("err", null, null, null);
+        Mongo.eraseSessionData(user, null);
+        return;
+      }
+
+      let expired = true;
+      for (let item of document.availablePolls) {
+        if (item.poll_id.toString() === document.session.poll_id.toString()) {
+          expired = false;
+          break;
+        }
+      }
+
+      /* Poll expired while user was voting */
+      if (expired) {
+        callback("exp", null, null, null);
         Mongo.eraseSessionData(user, null);
         return;
       }
@@ -290,7 +306,7 @@ const Mongo = {
         if (numQt >= doc.questions.length) {
           callback(null, null, null, null);
           Mongo.eraseSessionData(user, null);
-          Mongo.sumbitVotingResults(user, document);
+          Mongo.sumbitVotingResults(user, document.session);
           return;
         }
 
@@ -365,13 +381,26 @@ const Mongo = {
 
     if (!Mongo.db) return;
 
-    Mongo.db.collection('polls').updateOne({_id: votingResults.poll_id}, { /*
-      TODO
-    */
-    },
-    function(err, result) {
-      if (!err && result)
-        Mongo.deleteFromUserAvailablePollsAfterVoting(user, votingResults.poll_id);
+    Mongo.db.collection('polls').findOne({_id: votingResults.poll_id}, {questions: 1},
+    function(err, doc) {
+
+      for (let i = 0; i < doc.questions.length; i ++) {
+        for (let _i = 0; _i < doc.questions[i].votes.length; _i ++) {
+          if (doc.questions[i].votes[_i] !== undefined && votingResults.votes[i][_i]) {
+            doc.questions[i].votes[_i] ++;
+            if (!doc.questions[i].multiple) break;
+          }
+        }
+      }
+
+      Mongo.db.collection('polls').updateOne(
+        { _id: votingResults.poll_id },
+        { $set: {questions: doc.questions} },
+      function(err, result) {
+        if (!err && result)
+          Mongo.deleteFromUserAvailablePollsAfterVoting(user, votingResults.poll_id);
+      });
+
     });
 
   },

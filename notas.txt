@@ -1,7 +1,5 @@
 TODO
 
-- Actualizar la información en la colección 'polls' tras enviar votos
-- Comprobar que no ha caducado la encuesta antes de actualizar los votos al enviarlos
 - Votar en MUC (tanto por mensaje grupal como privado)
 - Mostrar resultados de votación en MUC (cuando caduca, y tras votar(?))
 - Recepción de mensajes invite para unirse a MUCs con contraseña

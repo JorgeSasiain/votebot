@@ -70,6 +70,9 @@ const Utils = {
       } else if (numQt === "err") {
         body = 'Ha ocurrido un error. Es posible que la encuesta haya sido borrada.';
 
+      } else if (numQt === "exp") {
+        body = 'La encuesta en la que estás votando ha caducado.';
+
       /* Ok: Send next question */
       } else {
         let btn = multiple ? '□' : '○' ;

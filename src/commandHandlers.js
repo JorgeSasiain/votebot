@@ -69,8 +69,9 @@ const CommandHandlers = {
                   'Código: ' + poll.id_select + '\n'
                   ;
         }
-        Utils.sendStanza(bot, botJid, user, 'chat', body);
       }
+
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
     };
 
     if (type == 'groupchat' || user.includes('@conference.')) {
