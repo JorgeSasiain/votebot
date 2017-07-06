@@ -1,8 +1,5 @@
 TODO
 
-- Mostrar información de votación cada x minutos, o otro comando para ver votación por privado
-- Mostrar resultados de votación en MUC (cuando caduca, y tras votar en mensaje groupchat(?))
+- Mostrar resultados de votación en MUC cuando caduca (no solo mensaje de que ha terminado)
 - Evitar que el mismo usuario pueda votar varias veces en una misma votación
 - Recepción de mensajes invite para unirse a MUCs con contraseña
-
-- Comando para información general y ayuda de utilización

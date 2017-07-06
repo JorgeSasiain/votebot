@@ -94,7 +94,7 @@ function handleCommand(bot, body, user, type) {
     case '':
     case 'h':
     case 'help':
-      CommandHandlers.onInfoCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
+      CommandHandlers.onHelpCommand(bot, ACCOUNTS.BOT_JID, body, user, type);
       break;
 
     case 'c':

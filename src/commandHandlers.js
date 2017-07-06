@@ -12,7 +12,7 @@ const CommandHandlers = {
      type:   type of message: chat or groupchat
   */
 
-  onInfoCommand: function(bot, botJid, data, user, type) {
+  onHelpCommand: function(bot, botJid, data, user, type) {
 
   let body = '';
 
@@ -45,7 +45,7 @@ const CommandHandlers = {
 
   }
 
-  body += '\n\n Si necesitas mas ayuda, utiliza el comando /c para ver los comandos disponibles.'
+  body += '\n\nSi necesitas mas ayuda, utiliza el comando /c para ver los comandos disponibles.'
   Utils.sendStanza(bot, botJid, user, 'chat', body);
 
   },
@@ -71,6 +71,7 @@ const CommandHandlers = {
   onVoteCommand: function(bot, botJid, data, user, type) {
 
     let body = '';
+    let user_muc = user;
     user = user.substr(0, user.indexOf("/"));
 
     let choices =
@@ -83,7 +84,7 @@ const CommandHandlers = {
 
       let callback = function(poll_id) {
         if (!poll_id)
-          Utils.sendStanza(bot, botJid, user, 'chat', 'No hay ninguna votación activa.');
+          Utils.sendStanza(bot, botJid, user_muc, 'chat', 'No hay ninguna votación activa.');
 
         votingResults.poll_id = poll_id;
         Mongo.sumbitVotingResults(null, votingResults);
@@ -106,25 +107,43 @@ const CommandHandlers = {
   onInfoCommand: function(bot, botJid, data, user, type) {
 
     let body = '';
+    let user_muc = user;
     user = user.substr(0, user.indexOf("/"));
 
     if (type == 'groupchat' || user.includes('@conference.')) {
 
-      //TODO
+      let callback = function(vote_id) {
+
+        let _callback = function(voteInfo) {
+
+          if (!voteInfo) {
+            body = 'No hay ninguna votación activa.';
+            Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
+
+          } else {
+            Utils.sendVoteResults(bot, botJid, user_muc, 'chat', voteInfo);
+          }
+
+        }
+
+        Mongo.getVoteInformationAndResults(vote_id, _callback);
+      }
+
+      Mongo.getPollIDInMUC(user, callback);
 
     } else {
 
       body = 'Comando no disponible en chat individual.';
+      Utils.sendStanza(bot, botJid, user, 'chat', body);
 
     }
-
-    Utils.sendStanza(bot, botJid, user, 'chat', body);
 
   },
 
   onListCommand: function(bot, botJid, data, user, type) {
 
     let body = '';
+    let user_muc = user;
     user = user.substr(0, user.indexOf("/"));
 
     let callback = function(polls) {
@@ -146,7 +165,7 @@ const CommandHandlers = {
 
     if (type == 'groupchat' || user.includes('@conference.')) {
       body = 'Comando no disponible en chat grupal: /' + data;
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
+      Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
 
     } else {
       Mongo.getUserAvailablePolls(user, callback);
@@ -158,6 +177,7 @@ const CommandHandlers = {
 
     let body = '';
     let poll_id = null;
+    let user_muc = user;
     user = user.substr(0, user.indexOf("/"));
 
     let callback = function(poll) {
@@ -195,7 +215,7 @@ const CommandHandlers = {
 
     if (type == 'groupchat' || user.includes('@conference.')) {
       body = 'Comando no disponible en chat grupal: /' + data;
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
+      Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
 
     } else {
       Mongo.findUserPollBySelectCode(user, data.slice(-5), callback);
@@ -205,9 +225,12 @@ const CommandHandlers = {
 
   onDiscardCommand: function(bot, botJid, data, user, type) {
 
+    let user_muc = user;
+    user = user.substr(0, user.indexOf("/"));
+
     if (type == 'groupchat' || user.includes('@conference.')) {
       let body = 'Comando no disponible en chat grupal: /' + data;
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
+      Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
       return;
     }
 
@@ -216,15 +239,18 @@ const CommandHandlers = {
       Utils.sendStanza(bot, botJid, user, 'chat', body);
     };
 
-    Mongo.eraseSessionData(user.substr(0, user.indexOf("/")), callback);
+    Mongo.eraseSessionData(user, callback);
 
   },
 
   onBackCommand: function(bot, botJid, data, user, type) {
 
+    let user_muc = user;
+    user = user.substr(0, user.indexOf("/"));
+
     if (type == 'groupchat' || user.includes('@conference.')) {
       let body = 'Comando no disponible en chat grupal: /' + data;
-      Utils.sendStanza(bot, botJid, user, 'chat', body);
+      Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
       return;
     }
 
@@ -242,7 +268,7 @@ const CommandHandlers = {
       }
     };
 
-    Mongo.goBackToLastQuestion(user.substr(0, user.indexOf("/")), callback);
+    Mongo.goBackToLastQuestion(user, callback);
 
   },
 

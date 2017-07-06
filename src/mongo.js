@@ -481,6 +481,23 @@ const Mongo = {
 
     });
 
+  },
+
+  getVoteInformationAndResults: function(poll_id, callback) {
+
+    if (!Mongo.db) return;
+
+    Mongo.db.collection('polls').findOne({_id: poll_id},function(err, document) {
+
+      if (err || !document) {
+        callback(null);
+        return;
+      }
+
+      callback(document);
+
+    });
+
   }
 
 }

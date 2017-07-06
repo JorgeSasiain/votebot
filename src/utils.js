@@ -96,6 +96,20 @@ const Utils = {
 
     Utils.sendStanza(bot, botJid, user, 'groupchat', body);
 
+  },
+
+  sendVoteResults: function(bot, botJid, user, type, voteInfo) {
+
+    voteInfo = voteInfo.questions[0];
+    let btn = voteInfo.multiple ? '□' : '○' ;
+    let body = voteInfo.question + '\n';
+
+    for (let i = 0; i < voteInfo.choices.length; i ++) {
+      body += btn + ' ' + voteInfo.choices[i] + ': ' + voteInfo.votes[i] + '\n';
+    }
+
+    Utils.sendStanza(bot, botJid, user, type, body);
+
   }
 
 };
