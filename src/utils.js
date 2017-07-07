@@ -98,17 +98,23 @@ const Utils = {
 
   },
 
-  sendVoteResults: function(bot, botJid, user, type, voteInfo) {
+  sendVoteResults: function(bot, botJid, users, type, voteInfo, body) {
 
     voteInfo = voteInfo.questions[0];
     let btn = voteInfo.multiple ? '□' : '○' ;
-    let body = voteInfo.question + '\n';
+    body += voteInfo.question + '\n';
 
     for (let i = 0; i < voteInfo.choices.length; i ++) {
       body += btn + ' ' + voteInfo.choices[i] + ': ' + voteInfo.votes[i] + '\n';
     }
 
-    Utils.sendStanza(bot, botJid, user, type, body);
+    if (Array.isArray(users)) {
+      for (let user of users) {
+        Utils.sendStanza(bot, botJid, users, type, body);
+      }
+    } else {
+      Utils.sendStanza(bot, botJid, users, type, body);
+    }
 
   }
 

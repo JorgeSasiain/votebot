@@ -1,5 +1,10 @@
 TODO
 
-- Mostrar resultados de votación en MUC cuando caduca (no solo mensaje de que ha terminado)
 - Evitar que el mismo usuario pueda votar varias veces en una misma votación
 - Recepción de mensajes invite para unirse a MUCs con contraseña
+
+
+EXTENSIONES
+
+- Bot para telegram u otras plataformas de chat utilizando misma app web
+- Despliegue del servidor del bot 24/7

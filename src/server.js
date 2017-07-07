@@ -30,18 +30,18 @@ const bot = new Client({
 /* Function to run every minute */
 function monitorTTLs() {
   console.log("Monitoring TTL of documents in the 'polls' collection...");
-  Mongo.getAboutToExpirePollsID(onPollExpire);
+  Mongo.getAboutToExpirePolls(onPollExpire);
 }
 
 /* Handle notifications to users or to groupchat and other operations when a poll expires */
-function onPollExpire(pollType, _id, title) {
+function onPollExpire(pollType, _id, pollTitleOrVoteInfo) {
 
   console.log("A poll is about to expire! - " + _id);
 
   if (pollType === "poll") {
 
     let pollOwner = "";
-    let msg = 'Los resultados finales de tu encuesta "' + title +
+    let msg = 'Los resultados finales de tu encuesta "' + pollTitleOrVoteInfo +
     '" están disponibles en la página web!';
 
     let callback = function(pollOwner) {
@@ -53,12 +53,11 @@ function onPollExpire(pollType, _id, title) {
 
   } else if (pollType === "vote") {
 
-    let mucs = [];
-    let msg = "La votación " + title + " ha terminado." ; //TODO ...= getVoteResults()
+    let msg = "La votación ha terminado. Resultados:\n\n" ;
 
     let callback = function(mucs) {
       Utils.joinMucs(bot, mucs);
-      Utils.sendStanza(bot, ACCOUNTS.BOT_JID, mucs, 'groupchat', msg);
+      Utils.sendVoteResults(bot, ACCOUNTS.BOT_JID, mucs, 'groupchat', pollTitleOrVoteInfo, msg);
     };
 
     Mongo.onVoteExpire.notifyMucs(_id, callback);

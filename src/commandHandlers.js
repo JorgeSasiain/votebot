@@ -121,7 +121,7 @@ const CommandHandlers = {
             Utils.sendStanza(bot, botJid, user_muc, 'chat', body);
 
           } else {
-            Utils.sendVoteResults(bot, botJid, user_muc, 'chat', voteInfo);
+            Utils.sendVoteResults(bot, botJid, user_muc, 'chat', voteInfo, '');
           }
 
         }

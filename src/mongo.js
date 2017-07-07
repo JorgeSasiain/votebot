@@ -44,9 +44,9 @@ const Mongo = {
 
   /* Check for polls that are about to expire */
   /* Also checks that there is an open connection (every minute) */
-  getAboutToExpirePollsID: function(callback) {
+  getAboutToExpirePolls: function(callback) {
 
-    let _getAboutToExpirePollsID = function(triggerDates, callback) {
+    let _getAboutToExpirePolls = function(triggerDates, callback) {
 
       if (triggerDates == null || callback == null) return; /* Connection to DB failed */
 
@@ -70,7 +70,7 @@ const Mongo = {
       }).toArray(function(err, result) {
 
         result.forEach(function(document) {
-          callback("vote", document._id, document.questions[0].question);
+          callback("vote", document._id, document);
         });
 
       });
@@ -81,7 +81,7 @@ const Mongo = {
     let triggerDatePoll = new Date(triggerTime + 24 * 60 * 60000 + 65000); /* +24h ~1m */
     let triggerDateVote = new Date(triggerTime + 65000); /* +~1m */
 
-    Mongo.connect(_getAboutToExpirePollsID, [triggerDatePoll, triggerDateVote], callback);
+    Mongo.connect(_getAboutToExpirePolls, [triggerDatePoll, triggerDateVote], callback);
 
   },
 
