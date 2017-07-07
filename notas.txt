@@ -1,7 +1,6 @@
 TODO
 
 - Evitar que el mismo usuario pueda votar varias veces en una misma votación
-- Recepción de mensajes invite para unirse a MUCs con contraseña
 
 
 EXTENSIONES

@@ -31,10 +31,30 @@ const Utils = {
 
   },
 
-  /* Send presence stanza to 'mucs' to attempt to join them */
-  joinMucs: function(sender, mucs) {
+  /* Send presence stanza to muc or mucs to attempt to join them */
+  joinMucs: function(sender, mucs, pass) {
 
     let i = 1;
+
+    if (pass) {
+
+      for (let muc of mucs) {
+
+        let stanza = new Client.Stanza(
+          'presence', {
+            to: [mucs] + '/votebot',
+            id: 'room'+i
+          }
+        )
+        .c('x', {xmlns: 'http://jabber.org/protocol/muc'})
+        .c('password').t(pass);
+
+        sender.send(stanza);
+        i ++;
+      }
+
+      return;
+    }
 
     for (let muc of mucs) {
 

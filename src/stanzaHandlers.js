@@ -15,7 +15,7 @@ const StanzaHandlers = {
 
   onNewVote: function(bot, botJid, data) {
 
-    Utils.joinMucs(bot, data.mucs);
+    Utils.joinMucs(bot, data.mucs, null);
 
     let body = 'Nueva votación disponible de ' + data.creator + ':\n\n' + data.pollTitle + '\n';
 
