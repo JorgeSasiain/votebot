@@ -84,7 +84,7 @@ const Utils = {
 
     /* /v command was used without session data */
     } else if (numQt === "notNow") {
-      body = 'Selecciona primero una encuesta para votar';
+      body = '¡Selecciona primero una encuesta para votar!';
 
     /* Database error occurred */
     } else if (numQt === "err") {

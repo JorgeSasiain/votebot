@@ -161,7 +161,8 @@ const Mongo = {
 
     Mongo.db.collection('users').findOne({ user: user }, function(err, document) {
 
-      if (!document.hasOwnProperty('availablePolls') || !document.availablePolls.length) {
+      if (!document || !document.hasOwnProperty('availablePolls')
+        || !document.availablePolls.length) {
         callback(false);
         return;
       }
@@ -199,8 +200,12 @@ const Mongo = {
       { user: 1, session: 1, availablePolls: { $elemMatch: { id_select: code } } },
     function(err, document) {
 
+      /* User has never had any poll shared with them */
+      if (!document) {
+        callback(null);
+
       /* Another poll already selected */
-      if (document.hasOwnProperty('session')) {
+      } else if (document.hasOwnProperty('session')) {
         callback("cant");
 
       /* No match */
@@ -331,14 +336,14 @@ const Mongo = {
     function(err, document) {
 
       /* Error occurred */
-      if (err || !document) {
+      if (err) {
         callback("err", null, null, null);
         Mongo.eraseSessionData(user, null);
         return;
       }
 
-      /* Np session data (user has not selected a poll) */
-      if (!document.hasOwnProperty('session')) {
+      /* No session data (user has not selected a poll) */
+      if (!document || !document.hasOwnProperty('session')) {
         callback("notNow", null, null, null);
         return;
       }
@@ -433,12 +438,12 @@ const Mongo = {
     Mongo.db.collection('users').findOne({user: user},
     function(err, document) {
 
-      if (err || !document) {
+      if (err) {
         return;
       }
 
       /* Not voting */
-      if (!document.hasOwnProperty('session')) {
+      if (!document || !document.hasOwnProperty('session')) {
         callback("notSel", null, null, null);
         return;
       }

@@ -17,7 +17,7 @@ try {
 const app = new Express();
 const server = new Server(app);
 const PORT = process.env.PORT || 3001;
-const TIMER = 60000;
+const TIMER = 6000; //0;
 
 const Client = require('node-xmpp-client');
 
