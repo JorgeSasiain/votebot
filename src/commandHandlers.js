@@ -16,7 +16,7 @@ const CommandHandlers = {
 
   let body = '';
 
-  if (type == 'groupchat' || user.includes('@conference.')) {
+  if (type == 'groupchat' || Utils.isMUC(user)) {
 
     body = 'Si existe una votación activa en esta habitación, puedes votar en ella ' +
            'utilizando el comando /v. Añade a dicho comando la opción u opciones en ' +
@@ -77,7 +77,7 @@ const CommandHandlers = {
     let choices =
       [data.includes('1'), data.includes('2'), data.includes('3'), data.includes('4')];
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
 
       let votingResults = {};
       votingResults.votes = [choices];
@@ -110,7 +110,7 @@ const CommandHandlers = {
     let user_full = user;
     let user_bare = user.substr(0, user.indexOf("/"));
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
 
       let callback = function(vote_id) {
 
@@ -163,7 +163,7 @@ const CommandHandlers = {
       Utils.sendStanza(bot, botJid, user_full, 'chat', body);
     };
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user_full, 'chat', body);
 
@@ -213,7 +213,7 @@ const CommandHandlers = {
 
     };
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
       body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user_full, 'chat', body);
 
@@ -228,7 +228,7 @@ const CommandHandlers = {
     let user_full = user;
     let user_bare = user.substr(0, user.indexOf("/"));
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
       let body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user_full, 'chat', body);
       return;
@@ -248,7 +248,7 @@ const CommandHandlers = {
     let user_full = user;
     let user_bare = user.substr(0, user.indexOf("/"));
 
-    if (type == 'groupchat' || user.includes('@conference.')) {
+    if (type == 'groupchat' || Utils.isMUC(user)) {
       let body = 'Comando no disponible en chat grupal: /' + data;
       Utils.sendStanza(bot, botJid, user_full, 'chat', body);
       return;

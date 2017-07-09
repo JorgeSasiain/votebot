@@ -73,6 +73,18 @@ const Utils = {
 
   },
 
+  /* Check if JID corresponds to a chatroom service */
+  isMUC: function (jid) {
+    if (jid.includes('@conference.')) return true;
+    if (jid.includes('@conferences.')) return true;
+    if (jid.includes('@conf.')) return true;
+    if (jid.includes('@rooms.')) return true;
+    if (jid.includes('@muc.')) return true;
+    if (jid.includes('@chat.')) return true;
+    if (jid.includes('@salas.')) return true;
+    return false;
+  },
+
   /* Send next question of current poll */
   sendPollQuestion: function(bot, botJid, user, numQt, name, multiple, choices) {
 
