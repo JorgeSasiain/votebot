@@ -17,7 +17,7 @@ const StanzaHandlers = {
 
     Utils.joinMucs(bot, data.mucs, null);
 
-    let body = 'Nueva votación disponible de ' + data.creator + ':\n\n' + data.pollTitle + '\n';
+    let body = 'Nueva encuesta disponible de ' + data.creator + ':\n\n' + data.pollTitle + '\n';
 
     for (let muc of data.mucs) {
       Utils.sendVoteInformation(

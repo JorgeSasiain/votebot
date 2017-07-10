@@ -18,12 +18,12 @@ const CommandHandlers = {
 
   if (type == 'groupchat' || Utils.isMUC(user)) {
 
-    body = 'Si existe una votación activa en esta habitación, puedes votar en ella ' +
+    body = 'Si existe una encuesta activa en esta habitación, puedes votar en ella ' +
            'utilizando el comando /v. Añade a dicho comando la opción u opciones en ' +
-           'las que votar (ej. /v 2, /v 134). Si las opciones de la votación están ' +
-           'precedidas por ○, significa que la votación es de selección unica, y si ' +
+           'las que votar (ej. /v 2, /v 134). Si las opciones de la encuesta están ' +
+           'precedidas por ○, significa que la encuesta es de selección unica, y si ' +
            'están precedidas por □, significa que puedes votar mas de una opción.\n\n' +
-           'Para ver la información y resultados hasta el momento de la votación'  +
+           'Para ver la información y resultados hasta el momento de la encuesta'  +
            'actualmente activa en la habitación, utiliza el comando /i.\n\n' +
            'Si no quieres que tu votación sea visible para el resto de usuarios ' +
            'conectados, puedes enviar el comando /v al bot de forma privada dentro de ' +
@@ -58,8 +58,8 @@ const CommandHandlers = {
                '/l, /listado: listar encuestas disponibles\n' +
                '/s <código>, /seleccionar <código>: seleccionar encuesta\n' +
                '\n*COMANDOS DE VOTACIÓN*\n' +
-               '/v <opciones>, /votar <opciones>: votar en una pregunta o votación\n' +
-               '/i, /info: mostrar información y resultados de votación en habitación\n' +
+               '/v <opciones>, /votar <opciones>: votar en la pregunta actual de una encuesta\n' +
+               '/i, /info: mostrar información y resultados de encuesta en habitación\n' +
                '/d, /descartar: dejar de votar en encuesta\n' +
                '/a, /atras: rehacer voto en la pregunta anterior de encuesta\n'
                ;
@@ -84,7 +84,7 @@ const CommandHandlers = {
 
       let callback = function(poll_id) {
         if (!poll_id)
-          Utils.sendStanza(bot, botJid, user_full, 'chat', 'No hay ninguna votación activa.');
+          Utils.sendStanza(bot, botJid, user_full, 'chat', 'No hay ninguna encuesta activa.');
 
         votingResults.poll_id = poll_id;
         Mongo.sumbitVotingResults(null, votingResults);
@@ -117,7 +117,7 @@ const CommandHandlers = {
         let _callback = function(voteInfo) {
 
           if (!voteInfo) {
-            body = 'No hay ninguna votación activa.';
+            body = 'No hay ninguna encuesta activa.';
             Utils.sendStanza(bot, botJid, user_full, 'chat', body);
 
           } else {

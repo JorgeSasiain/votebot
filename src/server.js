@@ -53,7 +53,7 @@ function onPollExpire(pollType, _id, pollTitleOrVoteInfo) {
 
   } else if (pollType === "vote") {
 
-    let msg = "La votación ha terminado. Resultados:\n\n" ;
+    let msg = "El periodo de la encuesta ha terminado. Resultados:\n\n" ;
 
     let callback = function(mucs) {
       Utils.joinMucs(bot, mucs);
