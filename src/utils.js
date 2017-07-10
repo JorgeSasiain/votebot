@@ -31,6 +31,22 @@ const Utils = {
 
   },
 
+  /* Respond to subscription request by approving it, so that messages can be exchanged */
+  approveSubscriptionRequest: function(sender, from_, to) {
+
+    let stanza = new Client.Stanza(
+      'presence', {
+        from: from_,
+        to: to,
+        type: 'subscribed'
+      }
+    );
+
+    sender.send(stanza);
+    console.log("accepted user: " + from_);
+
+  },
+
   /* Send presence stanza to muc or mucs to attempt to join them */
   joinMucs: function(sender, mucs, pass) {
 

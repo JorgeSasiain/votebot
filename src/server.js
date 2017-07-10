@@ -17,7 +17,7 @@ try {
 const app = new Express();
 const server = new Server(app);
 const PORT = process.env.PORT || 3001;
-const TIMER = 6000; //0;
+const TIMER = 60000;
 
 const Client = require('node-xmpp-client');
 
@@ -182,11 +182,17 @@ bot.on('online', function(data) {
 /* When bot receives a message */
 bot.on('stanza', function(stanza) {
 
-  if (!stanza.is('message')) return;
-
   let type = stanza.attrs.type;
   let user = stanza.attrs.from;
 	let body = stanza.getChildText('body');
+
+  /* If presence subscription is received, accept it */
+  if (stanza.is('presence') && type === "subscribe") {
+    Utils.approveSubscriptionRequest(bot, ACCOUNTS.BOT_JID, user);
+    return;
+  }
+
+  if (!stanza.is('message')) return;
 
   /* If invite message is received, attempt to join MUC. It could be password-protected. */
   if (stanza.getChild('x') && stanza.getChild('x').getChild('invite')) {
